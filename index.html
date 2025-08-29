@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MLBB Draft Tracker (Online)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Клиент Supabase теперь подключается в основном скрипте внизу файла -->
+  <!-- Клиент Supabase подключается в основном скрипте внизу файла -->
   <style>
     .fade-in { animation: fadeIn .2s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none; } }
     .modal-open { overflow: hidden; } .scroll-thin { scrollbar-width: thin; }
@@ -31,7 +31,7 @@
         <!-- AUTH SECTION -->
         <div id="authSection" class="text-sm">
           <form id="loginForm" class="flex items-center gap-2">
-            <input id="loginEmail" type="email" class="w-48 px-3 py-2 rounded-xl bg-slate-100" placeholder="Email для входа" required />
+            <input id="loginEmail" type="email" class="w-48 px-3 py-2 rounded-xl bg-slate-100" placeholder="Email для входа/регистрации" required />
             <button type="submit" class="px-3 py-2 rounded-xl bg-slate-900 text-white">Войти</button>
           </form>
           <div id="userInfo" class="hidden items-center gap-3">
@@ -151,16 +151,13 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzcmhrd3l5ZWRreG1sb29kZGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzQ4NTUsImV4cCI6MjA3MjA1MDg1NX0.JlftKlupkTtFBIkXdWNL-DigdFRc9DVAP48VXmh3fgg';
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
-  // <<< ЗАМЕНИТЕ ЭТИ ДАННЫЕ (КОГДА ПОЛУЧИТЕ ID)
-  const ADMIN_UID = '1a903461-7a74-4dd1-bb2b-d40053a168c6'; // Ваш User ID из Supabase Auth -> Users
-  // ---
-
   // ====== Глобальные переменные и константы ======
   const HEROES = ["Aamon","Akai","Aldous","Alice","Alpha","Alucard","Angela","Argus","Arlott","Atlas","Aulus","Aurora","Badang","Balmond","Bane","Barats","Baxia","Beatrix","Belerick","Benedetta","Brody","Bruno","Carmilla","Cecilion","Chang'e","Chip","Chou","Cici","Claude","Clint","Cyclops","Diggie","Dyrroth","Edith","Esmeralda","Estes","Eudora","Fanny","Faramis","Floryn","Franco","Fredrinn","Freya","Gatotkaca","Gloo","Gord","Granger","Grock","Guinevere","Gusion","Hanabi","Hanzo","Harith","Harley","Hayabusa","Helcurt","Hilda","Hylos","Irithel","Ixia","Jawhead","Johnson","Joy","Julian","Kadita","Kagura","Kaja","Kalea","Karina","Karrie","Khaleed","Khufra","Kimmy","Lancelot","Lapu-Lapu","Layla","Leomord","Lesley","Ling","Lolita","Lunox","Luo Yi","Lylia","Martis","Masha","Mathilda","Melissa","Minotaur","Minsitthar","Miya","Moskov","Nana","Natalia","Natan","Nolan","Novaria","Odette","Paquito","Pharsa","Phoveus","Popol and Kupa","Rafaela","Roger","Ruby","Saber","Selena","Silvanna","Sun","Suyou","Terizla","Thamuz","Tigreal","Uranus","Vale","Valentina","Valir","Vexana","Wanwan","X.Borg","Xavier","Yi Sun-shin","Yin","Yu Zhong","Yve","Zetian","Zhask","Zhuxin","Zilong"];
   const LS_IMG = 'mlbb_portraits_base_v1';
-  const LS_FORM = 'mlbb_draft_form_v1'; // Автосохранение формы оставим в localStorage
+  const LS_FORM = 'mlbb_draft_form_v1';
   let allMatches = [];
   let currentUser = null;
+  let isCurrentUserAdmin = false; // Флаг администратора
 
   // ====== Утилиты ======
   function getImgBase(){ return localStorage.getItem(LS_IMG) || './portraits/'; }
@@ -189,17 +186,35 @@
     alert('Матч удален.');
   }
 
-  // ====== Логика аутентификации ======
+  // ====== Логика аутентификации на основе ролей ======
   const loginForm = document.getElementById('loginForm');
   const userInfo = document.getElementById('userInfo');
   const userEmailEl = document.getElementById('userEmail');
   const logoutBtn = document.getElementById('logoutBtn');
   const inputTabBtn = document.getElementById('inputTabBtn');
 
+  async function fetchUserProfile() {
+    isCurrentUserAdmin = false; // Сбрасываем флаг при каждой проверке
+    if (!currentUser) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', currentUser.id)
+      .single();
+
+    if (error) {
+      console.error("Ошибка получения профиля пользователя:", error.message);
+      return;
+    }
+    if (data && data.role === 'admin') {
+      isCurrentUserAdmin = true;
+    }
+  }
+
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
-    // Убедитесь, что URL вашего сайта на GitHub Pages указан в настройках Supabase
     const { error } = await supabase.auth.signInWithOtp({ email });
     if (error) {
         alert('Ошибка входа: ' + error.message);
@@ -212,7 +227,7 @@
   logoutBtn.addEventListener('click', async () => { await supabase.auth.signOut(); });
 
   function updateUIForUser() {
-    const isAdmin = currentUser && currentUser.id === ADMIN_UID;
+    const isAdmin = isCurrentUserAdmin;
     if (isAdmin) {
         loginForm.classList.add('hidden');
         userInfo.classList.remove('hidden'); userInfo.classList.add('flex');
@@ -234,7 +249,7 @@
   const tabs = { input: document.getElementById('tab-input'), stats: document.getElementById('tab-stats'), matches: document.getElementById('tab-matches') };
   const tabBtns = document.querySelectorAll('.tab-btn');
   tabBtns.forEach(btn => btn.addEventListener('click', () => {
-      if (btn.id === 'inputTabBtn' && (!currentUser || currentUser.id !== ADMIN_UID)) return;
+      if (btn.id === 'inputTabBtn' && !isCurrentUserAdmin) return;
       tabBtns.forEach(b => b.classList.remove('bg-slate-900', 'text-white'));
       btn.classList.add('bg-slate-900', 'text-white');
       const key = btn.dataset.tab;
@@ -309,7 +324,10 @@
   
   document.getElementById('matchForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!currentUser || currentUser.id !== ADMIN_UID) { alert('Только администратор может сохранять матчи.'); return; }
+    if (!isCurrentUserAdmin) {
+        alert('Только администратор может сохранять матчи.');
+        return;
+    }
     
     const f = e.currentTarget;
     function collect(container, type) { return Array.from(container.querySelectorAll('.flex.items-center')).map((row, idx) => { const hero = normalizeHero(row.querySelector('input')?.value || ''); if (!hero) return null; const obj = { hero, order: idx + 1 }; if (type === 'picks') { const roleSel = row.querySelector('select.pickRole'); obj.role = roleSel ? roleSel.value || '' : ''; } return obj; }).filter(Boolean); }
@@ -340,7 +358,7 @@
 
   function heroChip(name){ return `<span class='inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100'><img src='${heroImg(name)}' class='inline-preview'/>${name}</span>`; }
   function matchCardHTML(m){
-    const isAdmin = currentUser && currentUser.id === ADMIN_UID;
+    const isAdmin = isCurrentUserAdmin;
     const deleteButtonHTML = isAdmin ? `<button data-action='del' data-id='${m.id}' class='px-3 py-1.5 rounded-xl bg-rose-600 text-white'>Удалить</button>` : '';
     return `<div class='rounded-2xl ring-1 ring-slate-200 bg-white p-4'><div class='flex items-center justify-between gap-2'><div><div class='text-xs text-slate-500'>${m.league} • Патч ${m.patch} • ${m.date||'—'}</div><div class='font-medium mt-1'>${m.blue.team} <span class='text-xs ${m.winner==='blue'?'text-emerald-600':'text-slate-400'}'>${m.winner==='blue'?'(W)':''}</span> — ${m.red.team} <span class='text-xs ${m.winner==='red'?'text-emerald-600':'text-slate-400'}'>${m.winner==='red'?'(W)':''}</span></div></div>${deleteButtonHTML}</div><div class='mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm'><div><div class='text-xs text-slate-500 mb-1'>Синяя — баны / пики</div><div class='flex flex-wrap gap-1'>${m.blue.bans.map(x=>heroChip(x.hero)).join('')}</div><div class='mt-1 flex flex-wrap gap-1'>${m.blue.picks.map(x=>heroChip(x.hero)).join('')}</div></div><div><div class='text-xs text-slate-500 mb-1'>Красная — баны / пики</div><div class='flex flex-wrap gap-1'>${m.red.bans.map(x=>heroChip(x.hero)).join('')}</div><div class='mt-1 flex flex-wrap gap-1'>${m.red.picks.map(x=>heroChip(x.hero)).join('')}</div></div></div></div>`;
   }
@@ -407,11 +425,19 @@
     // Слушаем изменения состояния аутентификации (вход/выход/обновление токена)
     supabase.auth.onAuthStateChange(async (_event, session) => {
         currentUser = session?.user ?? null;
+        await fetchUserProfile(); // Запрашиваем профиль пользователя при изменении сессии
         updateUIForUser();
     });
 
-    // Загружаем данные
+    // Загружаем данные матчей
     allMatches = await fetchMatches();
+    
+    // Получаем текущую сессию и профиль при первой загрузке
+    const { data: { session } } = await supabase.auth.getSession();
+    currentUser = session?.user ?? null;
+    await fetchUserProfile();
+    updateUIForUser();
+
     document.getElementById('loader').remove();
 
     // Первоначальная отрисовка
