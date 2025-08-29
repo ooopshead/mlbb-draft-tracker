@@ -5,15 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MLBB Draft Tracker (Online)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SUPABASE CLIENT -->
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-    // <<< ЗАМЕНИТЕ ЭТИ ДАННЫЕ (1/3)
-    const SUPABASE_URL = 'https://fsrhkwyyedkxmlooddjn.supabase.co'; // Ваш URL из Supabase API settings
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzcmhrd3l5ZWRreG1sb29kZGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzQ4NTUsImV4cCI6MjA3MjA1MDg1NX0.JlftKlupkTtFBIkXdWNL-DigdFRc9DVAP48VXmh3fgg'; // Ваш anon public ключ
-    // ---
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  </script>
+  <!-- Клиент Supabase теперь подключается в основном скрипте внизу файла -->
   <style>
     .fade-in { animation: fadeIn .2s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none; } }
     .modal-open { overflow: hidden; } .scroll-thin { scrollbar-width: thin; }
@@ -151,9 +143,15 @@
   <template id="banRowTpl"><div class="flex items-center gap-2"><div class="w-10 text-xs text-slate-500">#<span class="ord"></span></div><div class="combo flex-1"><input class="banHero w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Герой" /><div class="combo-list hidden"></div></div></div></template>
   <template id="pickRowTpl"><div class="flex items-center gap-2"><div class="w-10 text-xs text-slate-500">#<span class="ord"></span></div><div class="combo flex-1"><input class="pickHero w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Герой" /><div class="combo-list hidden"></div></div><select class="pickRole w-28 px-2 py-2 rounded-xl bg-slate-100 text-sm"><option value="">Роль…</option><option value="exp">EXP</option><option value="jungle">Jungle</option><option value="mid">Mid</option><option value="roam">Roam</option><option value="gold">Gold</option></select></div></template>
 
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-  // <<< ЗАМЕНИТЕ ЭТИ ДАННЫЕ (2/3)
+  <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  // ВАШИ КЛЮЧИ
+  const SUPABASE_URL = 'https://fsrhkwyyedkxmlooddjn.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzcmhrd3l5ZWRreG1sb29kZGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzQ4NTUsImV4cCI6MjA3MjA1MDg1NX0.JlftKlupkTtFBIkXdWNL-DigdFRc9DVAP48VXmh3fgg';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+  // <<< ЗАМЕНИТЕ ЭТИ ДАННЫЕ (КОГДА ПОЛУЧИТЕ ID)
   const ADMIN_UID = 'YOUR_ADMIN_USER_ID'; // Ваш User ID из Supabase Auth -> Users
   // ---
 
@@ -177,14 +175,14 @@
 
   // ====== Функции для работы с Supabase ======
   async function fetchMatches() {
-    const { data, error } = await window.supabase.from('matches').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('matches').select('*').order('created_at', { ascending: false });
     if (error) { console.error('Ошибка загрузки матчей:', error); alert('Не удалось загрузить матчи.'); return []; }
     return data.map(m => ({ id: m.id, date: m.date, league: m.league, patch: m.patch, winner: m.winner, blue: { team: m.blue_team, picks: m.blue_picks || [], bans: m.blue_bans || [] }, red: { team: m.red_team, picks: m.red_picks || [], bans: m.red_bans || [] } }));
   }
 
   async function deleteMatch(id) {
     if (!confirm('Вы уверены, что хотите удалить этот матч?')) return;
-    const { error } = await window.supabase.from('matches').delete().eq('id', id);
+    const { error } = await supabase.from('matches').delete().eq('id', id);
     if (error) { console.error('Ошибка удаления:', error); alert('Не удалось удалить матч: ' + error.message); return; }
     allMatches = allMatches.filter(m => m.id !== id);
     refreshUI();
@@ -201,11 +199,8 @@
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
-    // <<< ЗАМЕНИТЕ ЭТИ ДАННЫЕ (3/3)
-    // Убедитесь, что URL вашего сайта на GitHub Pages (например, "https://username.github.io/repo/")
-    // указан в настройках Supabase: Authentication -> URL Configuration -> Site URL
+    // Убедитесь, что URL вашего сайта на GitHub Pages указан в настройках Supabase
     const { error } = await supabase.auth.signInWithOtp({ email });
-    // ---
     if (error) {
         alert('Ошибка входа: ' + error.message);
     } else {
@@ -325,7 +320,7 @@
     if (!matchDataForDB.league || !matchDataForDB.patch) return alert('Лига и патч обязательны.');
     if (!matchDataForDB.winner) return alert('Укажите победителя.');
 
-    const { data, error } = await window.supabase.from('matches').insert([matchDataForDB]).select().single();
+    const { data, error } = await supabase.from('matches').insert([matchDataForDB]).select().single();
     if (error) { console.error('Ошибка сохранения матча:', error); alert('Не удалось сохранить матч: ' + error.message); return; }
     alert('Матч сохранён!');
     
