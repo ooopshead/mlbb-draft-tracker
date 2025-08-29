@@ -152,6 +152,7 @@
   <template id="pickRowTpl"><div class="flex items-center gap-2"><div class="w-10 text-xs text-slate-500">#<span class="ord"></span></div><div class="combo flex-1"><input class="pickHero w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Герой" /><div class="combo-list hidden"></div></div><select class="pickRole w-28 px-2 py-2 rounded-xl bg-slate-100 text-sm"><option value="">Роль…</option><option value="exp">EXP</option><option value="jungle">Jungle</option><option value="mid">Mid</option><option value="roam">Roam</option><option value="gold">Gold</option></select></div></template>
 
   <script>
+  document.addEventListener('DOMContentLoaded', () => {
   // <<< ЗАМЕНИТЕ ЭТИ ДАННЫЕ (2/3)
   const ADMIN_UID = 'YOUR_ADMIN_USER_ID'; // Ваш User ID из Supabase Auth -> Users
   // ---
