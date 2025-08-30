@@ -172,7 +172,7 @@
     
     function getImgBase(){ return localStorage.getItem(LS_IMG) || './portraits/'; }
     function setImgBase(v){ localStorage.setItem(LS_IMG, v); }
-    function heroSlug(name){ return name.replace(/\./g,'_').replace(/'/g,'').replace(/\s+/g,'_'); }
+    function heroSlug(name){ return name.replace(/\./g,'_').replace(/'/g,'').replace(/\s+/g,'_').toLowerCase(); }
     function heroImg(name){ return getImgBase() + heroSlug(name) + '.png'; }
     function getCanonicalHero(name){ if(!name) return ''; const n=name.trim().toLowerCase(); return HEROES.find(h=>h.toLowerCase()===n) || ''; }
     function normalizeHero(name){ return getCanonicalHero(name) || ''; }
