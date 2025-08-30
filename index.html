@@ -20,457 +20,200 @@
     .dark .combo-item:hover, .dark .combo-item[aria-selected="true"] { background: #111827; }
     .dark .bg-slate-200 { background-color: #1f2937 !important; color: #e5e7eb !important; border-color: rgba(148,163,184,.25) !important; }
     .dark .hover\:bg-slate-300:hover { background-color: #374151 !important; }
+    .dark .bg-rose-100 { background-color: rgba(159, 18, 57, 0.25) !important; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-
-  <!-- Контейнер для страницы входа/регистрации -->
-  <div id="auth-container" class="min-h-screen flex items-center justify-center">
-    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg">
-      <h1 class="text-2xl font-bold text-center mb-6">MLBB Draft Tracker</h1>
-      <!-- Переключатель Вход/Регистрация -->
-      <div class="mb-4 flex justify-center border-b">
-        <button id="show-login-btn" class="px-4 py-2 -mb-px border-b-2 border-slate-900 font-semibold">Вход</button>
-        <button id="show-signup-btn" class="px-4 py-2 text-slate-500">Регистрация</button>
-      </div>
-
-      <!-- Форма входа -->
-      <form id="loginForm">
-        <div class="space-y-4">
-          <input id="loginEmail" type="email" autocomplete="email" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Email" required />
-          <input id="loginPassword" type="password" autocomplete="current-password" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Пароль" required />
-          <button type="submit" class="w-full px-3 py-3 rounded-xl bg-slate-900 text-white font-semibold">Войти</button>
-        </div>
-      </form>
-
-      <!-- Форма регистрации (скрыта по умолчанию) -->
-      <form id="signupForm" class="hidden">
-        <div class="space-y-4">
-          <input id="signupEmail" type="email" autocomplete="email" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Email" required />
-          <input id="signupPassword" type="password" autocomplete="new-password" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Придумайте пароль" required />
-          <button type="submit" class="w-full px-3 py-3 rounded-xl bg-slate-900 text-white font-semibold">Зарегистрироваться</button>
-        </div>
-        <p class="text-xs text-slate-500 mt-4 text-center">После регистрации дождитесь, пока администратор предоставит вам доступ.</p>
-      </form>
-    </div>
+  <div id="auth-container" class="min-h-screen flex items-center justify-center hidden">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg"><h1 class="text-2xl font-bold text-center mb-6">MLBB Draft Tracker</h1><div class="mb-4 flex justify-center border-b"><button id="show-login-btn" class="px-4 py-2 -mb-px border-b-2 border-slate-900 font-semibold">Вход</button><button id="show-signup-btn" class="px-4 py-2 text-slate-500">Регистрация</button></div><form id="loginForm"><div class="space-y-4"><input id="loginEmail" type="email" autocomplete="email" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Email" required /><input id="loginPassword" type="password" autocomplete="current-password" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Пароль" required /><button type="submit" class="w-full px-3 py-3 rounded-xl bg-slate-900 text-white font-semibold">Войти</button></div></form><form id="signupForm" class="hidden"><div class="space-y-4"><input id="signupEmail" type="email" autocomplete="email" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Email" required /><input id="signupPassword" type="password" autocomplete="new-password" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Придумайте пароль" required /><button type="submit" class="w-full px-3 py-3 rounded-xl bg-slate-900 text-white font-semibold">Зарегистрироваться</button></div><p class="text-xs text-slate-500 mt-4 text-center">После регистрации дождитесь, пока администратор предоставит вам доступ.</p></form></div>
   </div>
-  
-  <!-- Основной контейнер приложения (скрыт по умолчанию) -->
   <div id="app-container" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <header class="flex items-center justify-between mb-6 flex-wrap gap-4">
-      <h1 class="text-2xl font-bold tracking-tight">MLBB Draft Tracker</h1>
-      <div class="flex items-center gap-4">
-        <!-- Информация о пользователе -->
-        <div id="userInfo" class="text-sm flex items-center gap-3">
-          <span id="userEmail" class="text-slate-600"></span>
-          <button id="logoutBtn" class="px-3 py-2 rounded-xl bg-slate-200">Выйти</button>
-        </div>
-        <input id="imgBaseInput" class="hidden sm:block w-64 px-3 py-2 rounded-xl bg-slate-100" placeholder="Папка портретов: ./portraits/" />
-        <button id="themeToggle" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300" title="Тёмная/светлая тема">🌙</button>
-      </div>
-    </header>
-
-    <nav class="inline-flex rounded-2xl bg-white shadow ring-1 ring-slate-200 overflow-hidden mb-4">
-      <button data-tab="stats" class="tab-btn px-4 py-2 text-sm font-medium bg-slate-900 text-white">Статистика</button>
-      <button data-tab="matches" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100">Матчи</button>
-      <button id="inputTabBtn" data-tab="input" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 hidden">Ввод матча</button>
-    </nav>
-
-    <section id="tab-input" class="hidden fade-in">
-      <form id="matchForm" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
-            <label class="block text-sm font-medium mb-1">Лига</label>
-            <input name="league" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="MPL / MDL…" required />
-          </div>
-          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
-            <label class="block text-sm font-medium mb-1">Патч</label>
-            <input name="patch" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="напр. 1.8.80" required />
-          </div>
-          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
-            <label class="block text-sm font-medium mb-1">Дата</label>
-            <input type="date" name="date" class="w-full px-3 py-2 rounded-xl bg-slate-100" />
-          </div>
-          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
-            <label class="block text-sm font-medium mb-1">Победитель</label>
-            <div class="flex items-center gap-4 mt-2">
-              <label class="inline-flex items-center gap-2"><input type="radio" name="winner" value="blue"/> Синяя</label>
-              <label class="inline-flex items-center gap-2"><input type="radio" name="winner" value="red"/> Красная</label>
-            </div>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
-            <h2 class="font-semibold mb-2">Синяя команда</h2>
-            <input name="blueTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100 mb-3" placeholder="Blue Team" required />
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              <div><div class="text-sm font-medium mb-1">Баны (5)</div><div id="blueBans" class="space-y-2"></div></div>
-              <div><div class="text-sm font-medium mb-1">Пики (5)</div><div id="bluePicks" class="space-y-2"></div></div>
-            </div>
-          </div>
-          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
-            <h2 class="font-semibold mb-2">Красная команда</h2>
-            <input name="redTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100 mb-3" placeholder="Red Team" required />
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              <div><div class="text-sm font-medium mb-1">Баны (5)</div><div id="redBans" class="space-y-2"></div></div>
-              <div><div class="text-sm font-medium mb-1">Пики (5)</div><div id="redPicks" class="space-y-2"></div></div>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-center gap-3">
-          <button class="px-4 py-2 rounded-xl bg-emerald-600 text-white" type="submit">Сохранить матч</button>
-          <button id="resetForm" class="px-4 py-2 rounded-xl bg-slate-200" type="button">Очистить форму</button>
-        </div>
-      </form>
-    </section>
-    <section id="tab-stats" class="fade-in">
-      <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <div><label class="block text-xs font-medium mb-1">Лига</label><select id="filterLeague" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div>
-          <div><label class="block text-xs font-medium mb-1">Патч</label><select id="filterPatch" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div>
-          <div><label class="block text-xs font-medium mb-1">Команда</label><select id="filterTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div>
-          <div><label class="block text-xs font-medium mb-1">Сторона</label><select id="filterSide" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Все</option><option value="blue">Синяя</option><option value="red">Красная</option></select></div>
-          <div><label class="block text-xs font-medium mb-1">Поиск героя</label><input id="searchHero" placeholder="Введите имя" class="w-full px-3 py-2 rounded-xl bg-slate-100" /></div>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl shadow ring-1 ring-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead class="bg-slate-100 text-slate-600">
-              <tr>
-                <th class="px-4 py-2 text-left">Герой</th><th class="px-4 py-2 text-right">Игр</th><th class="px-4 py-2 text-right">Победы</th><th class="px-4 py-2 text-right">Поражения</th><th class="px-4 py-2 text-right">Винрейт</th><th class="px-4 py-2 text-right">Баны</th><th class="px-4 py-2 text-right">Присутствие</th>
-              </tr>
-            </thead>
-            <tbody id="statsBody" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-        <div class="p-3 text-xs text-slate-500">Нажмите на героя, чтобы открыть подробности.</div>
-      </div>
-    </section>
-    <section id="tab-matches" class="hidden fade-in">
-      <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
-        <h2 class="font-semibold mb-3">Сохранённые матчи</h2>
-        <div id="matchesList" class="grid gap-3"></div>
-      </div>
-    </section>
+    <header class="flex items-center justify-between mb-6 flex-wrap gap-4"><h1 class="text-2xl font-bold tracking-tight">MLBB Draft Tracker</h1><div class="flex items-center gap-4"><div id="userInfo" class="text-sm flex items-center gap-3"><span id="userEmail" class="text-slate-600"></span><button id="logoutBtn" class="px-3 py-2 rounded-xl bg-slate-200">Выйти</button></div><input id="imgBaseInput" class="hidden sm:block w-64 px-3 py-2 rounded-xl bg-slate-100" placeholder="Папка портретов: ./portraits/" /><button id="themeToggle" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300" title="Тёмная/светлая тема">🌙</button></div></header>
+    <nav class="inline-flex rounded-2xl bg-white shadow ring-1 ring-slate-200 overflow-hidden mb-4"><button data-tab="stats" class="tab-btn px-4 py-2 text-sm font-medium bg-slate-900 text-white">Статистика</button><button data-tab="matches" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100">Матчи</button><button id="inputTabBtn" data-tab="input" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 hidden">Ввод матча</button></nav>
+    <section id="tab-input" class="hidden fade-in"><form id="matchForm" class="space-y-6"><div class="grid grid-cols-1 md:grid-cols-4 gap-4"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Лига</label><input name="league" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="MPL / MDL…" required /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Патч</label><input name="patch" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="напр. 1.8.80" required /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Дата</label><input type="date" name="date" class="w-full px-3 py-2 rounded-xl bg-slate-100" /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Победитель</label><div class="flex items-center gap-4 mt-2"><label class="inline-flex items-center gap-2"><input type="radio" name="winner" value="blue"/> Синяя</label><label class="inline-flex items-center gap-2"><input type="radio" name="winner" value="red"/> Красная</label></div></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><h2 class="font-semibold mb-2">Синяя команда</h2><input name="blueTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100 mb-3" placeholder="Blue Team" required /><div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><div><div class="text-sm font-medium mb-1">Баны (5)</div><div id="blueBans" class="space-y-2"></div></div><div><div class="text-sm font-medium mb-1">Пики (5)</div><div id="bluePicks" class="space-y-2"></div></div></div></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><h2 class="font-semibold mb-2">Красная команда</h2><input name="redTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100 mb-3" placeholder="Red Team" required /><div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><div><div class="text-sm font-medium mb-1">Баны (5)</div><div id="redBans" class="space-y-2"></div></div><div><div class="text-sm font-medium mb-1">Пики (5)</div><div id="redPicks" class="space-y-2"></div></div></div></div></div><div class="flex items-center gap-3"><button class="px-4 py-2 rounded-xl bg-emerald-600 text-white" type="submit">Сохранить матч</button><button id="resetForm" class="px-4 py-2 rounded-xl bg-slate-200" type="button">Очистить форму</button></div></form></section>
+    <section id="tab-stats" class="hidden fade-in"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 mb-4"><div class="grid grid-cols-1 md:grid-cols-5 gap-3"><div><label class="block text-xs font-medium mb-1">Лига</label><select id="filterLeague" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Патч</label><select id="filterPatch" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Команда</label><select id="filterTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Сторона</label><select id="filterSide" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Все</option><option value="blue">Синяя</option><option value="red">Красная</option></select></div><div><label class="block text-xs font-medium mb-1">Поиск героя</label><input id="searchHero" placeholder="Введите имя" class="w-full px-3 py-2 rounded-xl bg-slate-100" /></div></div></div><div class="bg-white rounded-2xl shadow ring-1 ring-slate-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="bg-slate-100 text-slate-600"><tr><th class="px-4 py-2 text-left">Герой</th><th class="px-4 py-2 text-right">Игр</th><th class="px-4 py-2 text-right">Победы</th><th class="px-4 py-2 text-right">Поражения</th><th class="px-4 py-2 text-right">Винрейт</th><th class="px-4 py-2 text-right">Баны</th><th class="px-4 py-2 text-right">Присутствие</th></tr></thead><tbody id="statsBody" class="divide-y divide-slate-100"></tbody></table></div><div class="p-3 text-xs text-slate-500">Нажмите на героя, чтобы открыть подробности.</div></div></section>
+    <section id="tab-matches" class="hidden fade-in"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><div class="flex items-center justify-between mb-4 flex-wrap gap-3"><h2 class="font-semibold">Сохранённые матчи</h2><div><label class="block text-xs font-medium mb-1">Фильтр по команде</label><select id="filterMatchesTeam" class="w-64 px-3 py-2 rounded-xl bg-slate-100"></select></div></div><div id="matchesList" class="grid gap-3"></div></div></section>
   </div>
-  
   <div id="heroModal" class="fixed inset-0 bg-black/40 z-50 hidden"><div class="min-h-full w-full flex items-center justify-center p-4"><div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl ring-1 ring-slate-200 overflow-hidden"><div class="flex items-center justify-between px-5 py-3 border-b"><div><h3 id="modalHeroName" class="text-lg font-semibold"></h3><p id="modalHeroSubtitle" class="text-xs text-slate-500"></p></div><button id="closeModal" class="p-2 rounded-lg hover:bg-slate-100">✕</button></div><div class="p-5 space-y-6 max-h-[75vh] overflow-y-auto scroll-thin"><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-1">Общее</div><div id="modalSummary" class="text-sm"></div></div><div class="bg-slate-50 rounded-xl p-4 md:col-span-2"><div class="text-xs text-slate-500 mb-2">Статистика по ролям</div><div id="modalRoles" class="text-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-2">Топ‑10 синергий (союзники)</div><div id="modalSynergy" class="text-sm space-y-1"></div></div><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-2">Матчапы</div><div class="grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm"><div><div class="font-medium mb-1">Лучше против</div><div id="modalBestVs" class="space-y-1"></div></div><div><div class="font-medium mb-1">Сложно против</div><div id="modalWorstVs" class="space-y-1"></div></div></div></div></div><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-2">Позиции в драфте</div><div id="modalDraftPositions" class="text-sm grid grid-cols-2 lg:grid-cols-4 gap-2"></div></div></div></div></div></div>
-
   <template id="banRowTpl"><div class="flex items-center gap-2"><div class="w-10 text-xs text-slate-500">#<span class="ord"></span></div><div class="combo flex-1"><input class="banHero w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Герой" /><div class="combo-list hidden"></div></div></div></template>
   <template id="pickRowTpl"><div class="flex items-center gap-2"><div class="w-10 text-xs text-slate-500">#<span class="ord"></span></div><div class="combo flex-1"><input class="pickHero w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Герой" /><div class="combo-list hidden"></div></div><select class="pickRole w-28 px-2 py-2 rounded-xl bg-slate-100 text-sm"><option value="">Роль…</option><option value="exp">EXP</option><option value="jungle">Jungle</option><option value="mid">Mid</option><option value="roam">Roam</option><option value="gold">Gold</option></select></div></template>
-
+  
   <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const SUPABASE_URL = 'https://fsrhkwyyedkxmlooddjn.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzcmhrd3l5ZWRreG1sb29kZGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzQ4NTUsImV4cCI6MjA3MjA1MDg1NX0.JlftKlupkTtFBIkXdWNL-DigdFRc9DVAP48VXmh3fgg';
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  
-  // DOM Элементы
-  const authContainer = document.getElementById('auth-container');
-  const appContainer = document.getElementById('app-container');
-  const loginForm = document.getElementById('loginForm');
-  const signupForm = document.getElementById('signupForm');
-  const showLoginBtn = document.getElementById('show-login-btn');
-  const showSignupBtn = document.getElementById('show-signup-btn');
-  const userInfo = document.getElementById('userInfo');
-  const userEmailEl = document.getElementById('userEmail');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const inputTabBtn = document.getElementById('inputTabBtn');
-  
-  // Глобальные переменные
-  const HEROES = ["Aamon","Akai","Aldous","Alice","Alpha","Alucard","Angela","Argus","Arlott","Atlas","Aulus","Aurora","Badang","Balmond","Bane","Barats","Baxia","Beatrix","Belerick","Benedetta","Brody","Bruno","Carmilla","Cecilion","Chang'e","Chip","Chou","Cici","Claude","Clint","Cyclops","Diggie","Dyrroth","Edith","Esmeralda","Estes","Eudora","Fanny","Faramis","Floryn","Franco","Fredrinn","Freya","Gatotkaca","Gloo","Gord","Granger","Grock","Guinevere","Gusion","Hanabi","Hanzo","Harith","Harley","Hayabusa","Helcurt","Hilda","Hylos","Irithel","Ixia","Jawhead","Johnson","Joy","Julian","Kadita","Kagura","Kaja","Kalea","Karina","Karrie","Khaleed","Khufra","Kimmy","Lancelot","Lapu-Lapu","Layla","Leomord","Lesley","Ling","Lolita","Lunox","Luo Yi","Lylia","Martis","Masha","Mathilda","Melissa","Minotaur","Minsitthar","Miya","Moskov","Nana","Natalia","Natan","Nolan","Novaria","Odette","Paquito","Pharsa","Phoveus","Popol and Kupa","Rafaela","Roger","Ruby","Saber","Selena","Silvanna","Sun","Suyou","Terizla","Thamuz","Tigreal","Uranus","Vale","Valentina","Valir","Vexana","Wanwan","X.Borg","Xavier","Yi Sun-shin","Yin","Yu Zhong","Yve","Zetian","Zhask","Zhuxin","Zilong"];
-  const LS_IMG = 'mlbb_portraits_base_v1';
-  const LS_FORM = 'mlbb_draft_form_v1';
-  let allMatches = [];
-  let currentUser = null;
-  let currentUserRole = 'user';
+  document.addEventListener('DOMContentLoaded', async () => {
 
-  // ====== Переключатель форм Вход/Регистрация ======
-  showLoginBtn.addEventListener('click', () => {
-    loginForm.classList.remove('hidden'); signupForm.classList.add('hidden');
-    showLoginBtn.classList.add('border-slate-900', 'font-semibold'); showLoginBtn.classList.remove('text-slate-500');
-    showSignupBtn.classList.remove('border-slate-900', 'font-semibold'); showSignupBtn.classList.add('text-slate-500');
-  });
-  showSignupBtn.addEventListener('click', () => {
-    signupForm.classList.remove('hidden'); loginForm.classList.add('hidden');
-    showSignupBtn.classList.add('border-slate-900', 'font-semibold'); showSignupBtn.classList.remove('text-slate-500');
-    showLoginBtn.classList.remove('border-slate-900', 'font-semibold'); showLoginBtn.classList.add('text-slate-500');
-  });
-  
-  // ====== Логика аутентификации ======
-  async function fetchUserProfile() {
-    currentUserRole = 'user'; // Сброс
-    if (!currentUser) return;
-    const { data, error } = await supabase.from('profiles').select('role').eq('id', currentUser.id).single();
-    if (error) { console.error("Ошибка получения профиля:", error.message); return; }
-    if (data) { currentUserRole = data.role; }
-  }
-
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      alert('Ошибка регистрации: ' + error.message);
-    } else {
-      alert('Регистрация успешна! Проверьте почту для подтверждения, а затем дождитесь одобрения администратора.');
-      signupForm.reset();
-      showLoginBtn.click();
-    }
-  });
-
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { alert('Ошибка входа: ' + error.message); }
-  });
-
-  logoutBtn.addEventListener('click', async () => { await supabase.auth.signOut(); });
-  
-  function updateUIForSession() {
-    if (currentUser && (currentUserRole === 'admin' || currentUserRole === 'viewer')) {
-      authContainer.classList.add('hidden');
-      appContainer.classList.remove('hidden');
-      userEmailEl.textContent = currentUser.email;
-      if (currentUserRole === 'admin') {
-        inputTabBtn.classList.remove('hidden');
-      } else {
-        inputTabBtn.classList.add('hidden');
-      }
-    } else {
-      authContainer.classList.remove('hidden');
-      appContainer.classList.add('hidden');
-      if (currentUser) {
-        alert('Ваш аккаунт ожидает одобрения администратором.');
-        supabase.auth.signOut();
-      }
-    }
-    // Перерисовываем список матчей, чтобы кнопки удаления появились/исчезли
-    refreshMatchesList(allMatches);
-  }
-  
-  // ====== Утилиты и вся логика приложения ======
-  function getImgBase(){ return localStorage.getItem(LS_IMG) || './portraits/'; }
-  function setImgBase(v){ localStorage.setItem(LS_IMG, v); }
-  function heroSlug(name){ return name.replace(/\./g,'_').replace(/'/g,'').replace(/\s+/g,'_'); }
-  function heroImg(name){ return getImgBase() + heroSlug(name) + '.png'; }
-  function getCanonicalHero(name){ if(!name) return ''; const n=name.trim().toLowerCase(); return HEROES.find(h=>h.toLowerCase()===n) || ''; }
-  function normalizeHero(name){ return getCanonicalHero(name) || ''; }
-  function pct(n,d){ return d? (100*n/d):0; }
-  function fmtPct(v){ return isFinite(v)? v.toFixed(1)+'%':'—'; }
-  function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
-
-  async function fetchMatches() {
-    const { data, error } = await supabase.from('matches').select('*').order('created_at', { ascending: false });
-    if (error) { console.error('Ошибка загрузки матчей:', error); alert('Не удалось загрузить матчи.'); return []; }
-    return data.map(m => ({ id: m.id, date: m.date, league: m.league, patch: m.patch, winner: m.winner, blue: { team: m.blue_team, picks: m.blue_picks || [], bans: m.blue_bans || [] }, red: { team: m.red_team, picks: m.red_picks || [], bans: m.red_bans || [] } }));
-  }
-
-  async function deleteMatch(id) {
-    if (!confirm('Вы уверены, что хотите удалить этот матч?')) return;
-    const { error } = await supabase.from('matches').delete().eq('id', id);
-    if (error) { console.error('Ошибка удаления:', error); alert('Не удалось удалить матч: ' + error.message); return; }
-    allMatches = allMatches.filter(m => m.id !== id);
-    refreshUI();
-    alert('Матч удален.');
-  }
-
-  const tabs = { input: document.getElementById('tab-input'), stats: document.getElementById('tab-stats'), matches: document.getElementById('tab-matches') };
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  tabBtns.forEach(btn => btn.addEventListener('click', () => {
-      if (btn.id === 'inputTabBtn' && currentUserRole !== 'admin') return;
-      tabBtns.forEach(b => b.classList.remove('bg-slate-900', 'text-white'));
-      btn.classList.add('bg-slate-900', 'text-white');
-      const key = btn.dataset.tab;
-      Object.entries(tabs).forEach(([k, el]) => el.classList.toggle('hidden', k !== key));
-      if (key === 'stats') rebuildFiltersAndStats(allMatches);
-      if (key === 'matches') refreshMatchesList(allMatches);
-  }));
-
-  function attachCombobox(wrapper, inputEl){
-    const list = wrapper.querySelector('.combo-list'); let active = -1;
-    function produce(q){
-      const qq=(q||'').trim().toLowerCase(); let items = HEROES;
-      if (qq){ const starts = HEROES.filter(h => h.toLowerCase().startsWith(qq)); items = starts.length ? starts : HEROES.filter(h => h.toLowerCase().includes(qq)); }
-      return items.slice(0,100);
-    }
-    function render(q){
-      const items = produce(q);
-      if(!items.length){ list.classList.add('hidden'); list.innerHTML=''; return; }
-      list.innerHTML = items.map((h,i)=>`<div class="combo-item" data-idx="${i}" data-value="${h}"><img src="${heroImg(h)}" alt=""/><span>${h}</span></div>`).join('');
-      list.classList.remove('hidden'); active=-1;
-      list.querySelectorAll('.combo-item').forEach(div=>{ div.addEventListener('click',()=>{ inputEl.value=div.dataset.value; list.classList.add('hidden'); saveDraftDebounced(); }); });
-    }
-    function moveActive(delta){ const items=[...list.querySelectorAll('.combo-item')]; if(!items.length) return; active=(active+delta+items.length)%items.length; items.forEach((el,i)=> el.setAttribute('aria-selected', i===active?'true':'false')); items[active].scrollIntoView({block:'nearest'}); }
-    inputEl.addEventListener('keydown',(e)=>{ if(list.classList.contains('hidden')) return; if(e.key==='ArrowDown'){e.preventDefault();moveActive(1);} if(e.key==='ArrowUp'){e.preventDefault();moveActive(-1);} if(e.key==='Enter'&&active>=0){e.preventDefault();const el=list.querySelectorAll('.combo-item')[active]; if(el){ inputEl.value=el.dataset.value; list.classList.add('hidden'); saveDraftDebounced(); }} if(e.key==='Escape'){ list.classList.add('hidden'); }});
-    inputEl.addEventListener('input', ()=> render(inputEl.value));
-    inputEl.addEventListener('focus', ()=> render(inputEl.value));
-    inputEl.addEventListener('blur', ()=> setTimeout(()=>list.classList.add('hidden'), 150));
-  }
-  
-  const banRowTpl = document.getElementById('banRowTpl'); const pickRowTpl = document.getElementById('pickRowTpl');
-  const blueBansEl = document.getElementById('blueBans'); const redBansEl = document.getElementById('redBans');
-  const bluePicksEl = document.getElementById('bluePicks'); const redPicksEl = document.getElementById('redPicks');
-
-  function buildRows(container, tpl, count, prefill=[]) {
-    container.innerHTML='';
-    for(let i=1;i<=count;i++){
-      const node = tpl.content.cloneNode(true); node.querySelector('.ord').textContent = i;
-      const input = node.querySelector('input'); attachCombobox(node.querySelector('.combo'), input);
-      const item = prefill[i-1];
-      if (item && item.hero) {
-        input.value = item.hero;
-        const roleSel = node.querySelector('select.pickRole');
-        if (roleSel && item.role) roleSel.value = item.role;
-      }
-      container.appendChild(node);
-    }
-  }
-
-  function readFormDraft(){ try { return JSON.parse(localStorage.getItem(LS_FORM)) || null; } catch { return null; } }
-  function writeFormDraft(d){ localStorage.setItem(LS_FORM, JSON.stringify(d)); }
-  function getFormData(){
-    const f=document.getElementById('matchForm');
-    function collectFrom(container){ return Array.from(container.querySelectorAll('.flex.items-center')).map((row,idx)=>{ const hero = normalizeHero(row.querySelector('input')?.value||''); if(!hero) return null; const obj = {hero, order: idx+1}; const roleSel=row.querySelector('select.pickRole'); if(roleSel) obj.role = roleSel.value||''; return obj; }).filter(Boolean); }
-    return { league: f.league.value || '', patch: f.patch.value || '', date: f.date.value || '', winner: (f.winner.value||''), blueTeam: f.blueTeam.value || '', redTeam: f.redTeam.value || '', blue: { bans: collectFrom(blueBansEl), picks: collectFrom(bluePicksEl) }, red:  { bans: collectFrom(redBansEl),  picks: collectFrom(redPicksEl) } };
-  }
-  function applyFormDraft(d){
-    if(!d) return; const f=document.getElementById('matchForm');
-    f.league.value=d.league||''; f.patch.value=d.patch||''; f.date.value=d.date||''; f.blueTeam.value=d.blueTeam||''; f.redTeam.value=d.redTeam||'';
-    if(d.winner){ const wEls=f.querySelectorAll('input[name=winner]'); wEls.forEach(el=> el.checked = (el.value===d.winner)); } else { f.querySelectorAll('input[name=winner]').forEach(el=> el.checked=false); }
-    buildRows(blueBansEl, banRowTpl, 5, d.blue?.bans||[]); buildRows(redBansEl,  banRowTpl, 5, d.red?.bans||[]);
-    buildRows(bluePicksEl, pickRowTpl, 5, d.blue?.picks||[]); buildRows(redPicksEl,  pickRowTpl, 5, d.red?.picks||[]);
-  }
-  const saveDraftDebounced = debounce(()=> writeFormDraft(getFormData()), 250);
-  document.addEventListener('input', (e)=>{ const form = document.getElementById('matchForm'); if (form && form.contains(e.target)) saveDraftDebounced(); });
-  document.addEventListener('change', (e)=>{ const form = document.getElementById('matchForm'); if (form && form.contains(e.target)) saveDraftDebounced(); });
-
-  document.getElementById('resetForm').addEventListener('click', () => {
-    const keep = readFormDraft() || {};
-    keep.blue = {bans:[], picks:[]}; keep.red = {bans:[], picks:[]}; keep.winner='';
-    writeFormDraft(keep); applyFormDraft(keep);
-  });
-  
-  document.getElementById('matchForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (currentUserRole !== 'admin') {
-        alert('Только администратор может сохранять матчи.');
-        return;
-    }
-    const f = e.currentTarget;
-    function collect(container, type) { return Array.from(container.querySelectorAll('.flex.items-center')).map((row, idx) => { const hero = normalizeHero(row.querySelector('input')?.value || ''); if (!hero) return null; const obj = { hero, order: idx + 1 }; if (type === 'picks') { const roleSel = row.querySelector('select.pickRole'); obj.role = roleSel ? roleSel.value || '' : ''; } return obj; }).filter(Boolean); }
-    const matchDataForDB = { date: f.date.value || null, league: f.league.value.trim(), patch: f.patch.value.trim(), winner: f.winner.value, blue_team: f.blueTeam.value.trim(), red_team: f.redTeam.value.trim(), blue_bans: collect(blueBansEl, 'bans'), blue_picks: collect(bluePicksEl, 'picks'), red_bans: collect(redBansEl, 'bans'), red_picks: collect(redPicksEl, 'picks') };
-    if (!matchDataForDB.blue_team || !matchDataForDB.red_team) return alert('Укажите названия команд.');
-    if (!matchDataForDB.league || !matchDataForDB.patch) return alert('Лига и патч обязательны.');
-    if (!matchDataForDB.winner) return alert('Укажите победителя.');
-    const { data, error } = await supabase.from('matches').insert([matchDataForDB]).select().single();
-    if (error) { console.error('Ошибка сохранения матча:', error); alert('Не удалось сохранить матч: ' + error.message); return; }
-    alert('Матч сохранён!');
-    const newMatch = { id: data.id, date: data.date, league: data.league, patch: data.patch, winner: data.winner, blue: { team: data.blue_team, picks: data.blue_picks, bans: data.blue_bans }, red: { team: data.red_team, picks: data.red_picks, bans: data.red_bans } };
-    allMatches.unshift(newMatch);
-    refreshUI();
-    const keep = { ...readFormDraft(), blue:{bans:[],picks:[]}, red:{bans:[],picks:[]}, winner:'' };
-    writeFormDraft(keep); applyFormDraft(keep);
-  });
-
-  const matchesListEl = document.getElementById('matchesList');
-  const filterLeague=document.getElementById('filterLeague'), filterPatch=document.getElementById('filterPatch'), filterTeam=document.getElementById('filterTeam'), filterSide=document.getElementById('filterSide'), searchHero=document.getElementById('searchHero'), statsBody=document.getElementById('statsBody');
-  const heroModal=document.getElementById('heroModal'); document.getElementById('closeModal').onclick=()=> heroModal.classList.add('hidden'); heroModal.addEventListener('click',e=>{ if(e.target===heroModal) heroModal.classList.add('hidden'); });
-
-  function heroChip(name){ return `<span class='inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100'><img src='${heroImg(name)}' class='inline-preview'/>${name}</span>`; }
-  function matchCardHTML(m){
-    const isAdmin = currentUserRole === 'admin';
-    const deleteButtonHTML = isAdmin ? `<button data-action='del' data-id='${m.id}' class='px-3 py-1.5 rounded-xl bg-rose-600 text-white'>Удалить</button>` : '';
-    return `<div class='rounded-2xl ring-1 ring-slate-200 bg-white p-4'><div class='flex items-center justify-between gap-2'><div><div class='text-xs text-slate-500'>${m.league} • Патч ${m.patch} • ${m.date||'—'}</div><div class='font-medium mt-1'>${m.blue.team} <span class='text-xs ${m.winner==='blue'?'text-emerald-600':'text-slate-400'}'>${m.winner==='blue'?'(W)':''}</span> — ${m.red.team} <span class='text-xs ${m.winner==='red'?'text-emerald-600':'text-slate-400'}'>${m.winner==='red'?'(W)':''}</span></div></div>${deleteButtonHTML}</div><div class='mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm'><div><div class='text-xs text-slate-500 mb-1'>Синяя — баны / пики</div><div class='flex flex-wrap gap-1'>${m.blue.bans.map(x=>heroChip(x.hero)).join('')}</div><div class='mt-1 flex flex-wrap gap-1'>${m.blue.picks.map(x=>heroChip(x.hero)).join('')}</div></div><div><div class='text-xs text-slate-500 mb-1'>Красная — баны / пики</div><div class='flex flex-wrap gap-1'>${m.red.bans.map(x=>heroChip(x.hero)).join('')}</div><div class='mt-1 flex flex-wrap gap-1'>${m.red.picks.map(x=>heroChip(x.hero)).join('')}</div></div></div></div>`;
-  }
-  function refreshMatchesList(matches) {
-    if (!matches || !matches.length) { matchesListEl.innerHTML='<div class="text-sm text-slate-500">Пока нет матчей.</div>'; return; }
-    matchesListEl.innerHTML = matches.map(matchCardHTML).join('');
-    matchesListEl.querySelectorAll('[data-action=del]')?.forEach(b => { b.onclick = () => deleteMatch(b.dataset.id); });
-  }
-
-  function collectFilters(matches){ const leagues=new Set(), patches=new Set(), teams=new Set(); matches.forEach(m=>{ if(m.league)leagues.add(m.league); if(m.patch)patches.add(m.patch); if(m.blue?.team)teams.add(m.blue.team); if(m.red?.team)teams.add(m.red.team); }); return { leagues:['Все',...leagues], patches:['Все',...patches], teams:['Все',...teams] }; }
-  function setOptions(sel,arr){ const cur=sel.value; sel.innerHTML=arr.map(v=>`<option value='${v==='Все'?'':v}'>${v}</option>`).join(''); Array.from(sel.options).forEach(o=>{ if(o.value===cur) sel.value=cur; }); }
-  function applyFilters(matches, {league,patch,team,side}){ return matches.filter(m=>{ if (league && league!=='Все' && m.league!==league) return false; if (patch && patch!=='Все' && m.patch!==patch) return false; if (team && team!=='Все' && !(m.blue.team===team || m.red.team===team)) return false; if (!side) return true; if (side==='blue' && team && team!=='Все') return m.blue.team===team; if (side==='red' && team && team!=='Все') return m.red.team===team; return true; }); }
-  function aggregate(matches){ const map=new Map(); function ens(h){ if(!map.has(h)) map.set(h,{hero:h,picks:0,wins:0,losses:0,bans:0,presence:0}); return map.get(h); } matches.forEach(m=>{ const winSide=m.winner; m.blue.picks.forEach(p=>{ const h=p.hero; const s=ens(h); s.picks++; s.presence++; if(winSide==='blue') s.wins++; else s.losses++; }); m.red.picks.forEach(p=>{ const h=p.hero; const s=ens(h); s.picks++; s.presence++; if(winSide==='red') s.wins++; else s.losses++; }); m.blue.bans.forEach(b=>{ const s=ens(b.hero); s.bans++; s.presence++; }); m.red.bans.forEach(b=>{ const s=ens(b.hero); s.bans++; s.presence++; }); }); return Array.from(map.values()); }
-  function renderStats(allMatchesData){
-    const filters= {league:filterLeague.value||'', patch:filterPatch.value||'', team:filterTeam.value||'', side:filterSide.value||''};
-    const matches=applyFilters(allMatchesData, filters);
-    const rows = aggregate(matches).filter(r=> !searchHero.value || r.hero.toLowerCase().startsWith(searchHero.value.toLowerCase())).sort((a,b)=> (b.presence-a.presence)||(b.picks-a.picks));
-    statsBody.innerHTML = rows.map(r=>{ const wr = r.picks ? fmtPct(pct(r.wins, r.picks)) : '—'; return `<tr class='hover:bg-slate-50 cursor-pointer' data-hero='${r.hero}'><td class='px-4 py-2'><div class='flex items-center gap-2'><img src='${heroImg(r.hero)}' class='inline-preview'/>${r.hero}</div></td><td class='px-4 py-2 text-right'>${r.picks}</td><td class='px-4 py-2 text-right'>${r.wins}</td><td class='px-4 py-2 text-right'>${r.losses}</td><td class='px-4 py-2 text-right'>${wr}</td><td class='px-4 py-2 text-right'>${r.bans}</td><td class='px-4 py-2 text-right'>${r.presence}</td></tr>`; }).join('');
-    statsBody.querySelectorAll('tr[data-hero]')?.forEach(tr=> tr.addEventListener('click', ()=> openHeroModal(tr.dataset.hero, matches)));
-  }
-  [filterLeague,filterPatch,filterTeam,filterSide,searchHero].forEach(el=> el.addEventListener('input', () => renderStats(allMatches)));
-  function rebuildFiltersAndStats(matches){ const f=collectFilters(matches); setOptions(filterLeague,f.leagues); setOptions(filterPatch,f.patches); setOptions(filterTeam,f.teams); renderStats(matches); }
-  function topN(map,n,{best=true,minGames=2}={}){ const arr=[...map.entries()].map(([name,o])=>({name, games:o.games, wins:o.wins, wr:o.games?o.wins*100/o.games:0})).filter(x=>x.games>=minGames).sort((a,b)=> best? (b.wr-a.wr||b.games-a.games):(a.wr-b.wr||b.games-a.games)); return arr.slice(0,n); }
-  function calcHeroDetails(hero, matches){
-    const d={hero, picks:0,wins:0,losses:0,bans:0, roles:new Map(), synergy:new Map(), vs:new Map(), draft:{pick:new Map(),ban:new Map()}};
-    function roleEns(r){ if(!d.roles.has(r)) d.roles.set(r,{games:0,wins:0,losses:0}); return d.roles.get(r); }
-    function inc(map,key,win){ if(!map.has(key)) map.set(key,{games:0,wins:0}); const o=map.get(key); o.games++; if(win) o.wins++; }
-    matches.forEach(m=>{ const winBlue=m.winner==='blue'; const blueHas=m.blue.picks.some(p=>p.hero===hero); const redHas=m.red.picks.some(p=>p.hero===hero); m.blue.picks.forEach(p=>{ if(p.hero===hero){ d.picks++; if(winBlue) d.wins++; else d.losses++; if(p.role){ const rs=roleEns(p.role); rs.games++; if(winBlue) rs.wins++; else rs.losses++; } d.draft.pick.set(`B${p.order}`,(d.draft.pick.get(`B${p.order}`)||0)+1);} }); m.red.picks.forEach(p=>{ if(p.hero===hero){ d.picks++; if(!winBlue) d.wins++; else d.losses++; if(p.role){ const rs=roleEns(p.role); rs.games++; if(!winBlue) rs.wins++; else rs.losses++; } d.draft.pick.set(`R${p.order}`,(d.draft.pick.get(`R${p.order}`)||0)+1);} }); m.blue.bans.forEach(b=>{ if(b.hero===hero){ d.bans++; d.draft.ban.set(`B${b.order}`,(d.draft.ban.get(`B${b.order}`)||0)+1);} }); m.red.bans.forEach(b=>{ if(b.hero===hero){ d.bans++; d.draft.ban.set(`R${b.order}`,(d.draft.ban.get(`R${b.order}`)||0)+1);} }); if(blueHas){ m.blue.picks.filter(x=>x.hero!==hero).forEach(a=>inc(d.synergy,a.hero,winBlue)); m.red.picks.forEach(e=>inc(d.vs,e.hero,winBlue)); } if(redHas){ m.red.picks.filter(x=>x.hero!==hero).forEach(a=>inc(d.synergy,a.hero,!winBlue)); m.blue.picks.forEach(e=>inc(d.vs,e.hero,!winBlue)); } });
-    return d;
-  }
-  function renderKV(items){ if(!items.length) return '<div class="text-slate-500 text-xs">Недостаточно данных</div>'; return items.map(x=>`<div class='flex items-center justify-between gap-2'><div class='flex items-center gap-2 min-w-0'><img src='${heroImg(x.name)}' class='inline-preview'/><div class='truncate'>${x.name}</div></div><div class='text-right text-slate-600 whitespace-nowrap'>${x.games} игр • ${x.wins}W • ${fmtPct(x.wr)}</div></div>`).join(''); }
-  function renderDraft(map,title){ const order=['B1','B2','B3','B4','B5','R1','R2','R3','R4','R5']; return `<div><div class='font-medium mb-1'>${title}</div><div class='grid grid-cols-5 gap-1 text-sm'>${order.map(k=>`<div class='px-2 py-1 rounded-lg bg-white ring-1 ring-slate-200 text-center'><div class='text-[10px] text-slate-500'>${k}</div><div>${map.get(k)||0}</div></div>`).join('')}</div></div>`; }
-  function openHeroModal(hero, matches){
-    const d=calcHeroDetails(hero, matches); const wr = d.picks? fmtPct(pct(d.wins,d.picks)):'—';
-    document.getElementById('modalHeroName').innerHTML = `<div class='flex items-center gap-2'><img src='${heroImg(hero)}' class='inline-preview'/> <span>${hero}</span></div>`;
-    document.getElementById('modalHeroSubtitle').textContent = `Игры: ${d.picks} • Победы: ${d.wins} • Поражения: ${d.losses} • Винрейт: ${wr} • Баны: ${d.bans}`;
-    document.getElementById('modalSummary').innerHTML = `<div class='space-y-1'><div class='flex items-center justify-between'><span>Игр</span><span class='font-medium'>${d.picks}</span></div><div class='flex items-center justify-between'><span>Победы</span><span class='font-medium'>${d.wins}</span></div><div class='flex items-center justify-between'><span>Поражения</span><span class='font-medium'>${d.losses}</span></div><div class='flex items-center justify-between'><span>Винрейт</span><span class='font-medium'>${wr}</span></div><div class='flex items-center justify-between'><span>Баны</span><span class='font-medium'>${d.bans}</span></div><div class='flex items-center justify-between'><span>Присутствие</span><span class='font-medium'>${d.picks + d.bans}</span></div></div>`;
-    const rolesOrder=['exp','jungle','mid','roam','gold']; const labels={exp:'EXP',jungle:'Jungle',mid:'Mid',roam:'Roam',gold:'Gold'};
-    document.getElementById('modalRoles').innerHTML = rolesOrder.map(r=>{ const rs=d.roles.get(r)||{games:0,wins:0,losses:0}; const wr= rs.games? fmtPct(pct(rs.wins,rs.games)):'—'; return `<div class='rounded-lg bg-white ring-1 ring-slate-200 p-3'><div class='text-xs text-slate-500'>${labels[r]}</div><div class='mt-1 text-sm'>${rs.games} игр • ${rs.wins}W/${rs.losses}L • ${wr}</div></div>`; }).join('');
-    document.getElementById('modalSynergy').innerHTML = renderKV(topN(d.synergy,10,{best:true}));
-    document.getElementById('modalBestVs').innerHTML = renderKV(topN(d.vs,5,{best:true}));
-    document.getElementById('modalWorstVs').innerHTML = renderKV(topN(d.vs,5,{best:false}));
-    document.getElementById('modalDraftPositions').innerHTML = `${renderDraft(d.draft.pick,'Пики по порядку')}${renderDraft(d.draft.ban,'Баны по порядку')}`;
-    heroModal.classList.remove('hidden');
-  }
-
-  function refreshUI() {
-      if (currentUser && (currentUserRole === 'admin' || currentUserRole === 'viewer')) {
-        refreshMatchesList([...allMatches]);
-        rebuildFiltersAndStats([...allMatches]);
-      }
-  }
-  
-  async function initializeApp() {
-    (function(){ const THEME_KEY='mlbb_theme'; const savedTheme = localStorage.getItem(THEME_KEY) || 'light'; if (savedTheme==='dark') document.body.classList.add('dark'); document.getElementById('themeToggle').addEventListener('click',()=>{ document.body.classList.toggle('dark'); localStorage.setItem(THEME_KEY, document.body.classList.contains('dark')? 'dark':'light'); }); })();
-    const imgBaseInput=document.getElementById('imgBaseInput'); imgBaseInput.value=getImgBase(); imgBaseInput.addEventListener('change',()=> setImgBase(imgBaseInput.value.trim()||'./portraits/'));
-    const initialDraft = readFormDraft(); if (initialDraft) { applyFormDraft(initialDraft); } else { buildRows(blueBansEl, banRowTpl, 5); buildRows(redBansEl, banRowTpl, 5); buildRows(bluePicksEl, pickRowTpl, 5); buildRows(redPicksEl, pickRowTpl, 5); }
-
-    document.body.insertAdjacentHTML('beforeend', '<div id="loader" style="backdrop-filter: blur(4px);" class="fixed inset-0 bg-white/70 flex items-center justify-center z-50"><p class="text-lg font-medium">Загрузка...</p></div>');
+    const SUPABASE_URL = 'https://fsrhkwyyedkxmlooddjn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzcmhrd3l5ZWRreG1sb29kZGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzQ4NTUsImV4cCI6MjA3MjA1MDg1NX0.JlftKlupkTtFBIkXdWNL-DigdFRc9DVAP48VXmh3fgg';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    let allMatches = [];
+    let currentUser = null;
+    let currentUserRole = 'user';
+    
+    const authContainer = document.getElementById('auth-container');
+    const appContainer = document.getElementById('app-container');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const showLoginBtn = document.getElementById('show-login-btn');
+    const showSignupBtn = document.getElementById('show-signup-btn');
+    const userEmailEl = document.getElementById('userEmail');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const inputTabBtn = document.getElementById('inputTabBtn');
+    const themeToggle = document.getElementById('themeToggle');
+    const imgBaseInput = document.getElementById('imgBaseInput');
+    const banRowTpl = document.getElementById('banRowTpl'); 
+    const pickRowTpl = document.getElementById('pickRowTpl');
+    const blueBansEl = document.getElementById('blueBans'); 
+    const redBansEl = document.getElementById('redBans');
+    const bluePicksEl = document.getElementById('bluePicks'); 
+    const redPicksEl = document.getElementById('redPicks');
+    const matchesListEl = document.getElementById('matchesList');
+    const filterLeague=document.getElementById('filterLeague'), filterPatch=document.getElementById('filterPatch'), filterTeam=document.getElementById('filterTeam'), filterSide=document.getElementById('filterSide'), searchHero=document.getElementById('searchHero'), statsBody=document.getElementById('statsBody');
+    const heroModal=document.getElementById('heroModal');
+    const filterMatchesTeam = document.getElementById('filterMatchesTeam');
+
+    // ИСПРАВЛЕНО: Обработчики для модального окна объявлены здесь
+    document.getElementById('closeModal').onclick = () => heroModal.classList.add('hidden');
+    heroModal.addEventListener('click', e => { if (e.target === heroModal) heroModal.classList.add('hidden'); });
+
+    const HEROES = ["Aamon","Akai","Aldous","Alice","Alpha","Alucard","Angela","Argus","Arlott","Atlas","Aulus","Aurora","Badang","Balmond","Bane","Barats","Baxia","Beatrix","Belerick","Benedetta","Brody","Bruno","Carmilla","Cecilion","Chang'e","Chip","Chou","Cici","Claude","Clint","Cyclops","Diggie","Dyrroth","Edith","Esmeralda","Estes","Eudora","Fanny","Faramis","Floryn","Franco","Fredrinn","Freya","Gatotkaca","Gloo","Gord","Granger","Grock","Guinevere","Gusion","Hanabi","Hanzo","Harith","Harley","Hayabusa","Helcurt","Hilda","Hylos","Irithel","Ixia","Jawhead","Johnson","Joy","Julian","Kadita","Kagura","Kaja","Kalea","Karina","Karrie","Khaleed","Khufra","Kimmy","Lancelot","Lapu-Lapu","Layla","Leomord","Lesley","Ling","Lolita","Lunox","Luo Yi","Lylia","Martis","Masha","Mathilda","Melissa","Minotaur","Minsitthar","Miya","Moskov","Nana","Natalia","Natan","Nolan","Novaria","Odette","Paquito","Pharsa","Phoveus","Popol and Kupa","Rafaela","Roger","Ruby","Saber","Selena","Silvanna","Sun","Suyou","Terizla","Thamuz","Tigreal","Uranus","Vale","Valentina","Valir","Vexana","Wanwan","X.Borg","Xavier","Yi Sun-shin","Yin","Yu Zhong","Yve","Zetian","Zhask","Zhuxin","Zilong"];
+    const LS_IMG = 'mlbb_portraits_base_v1';
+    const LS_FORM = 'mlbb_draft_form_v1';
+
+    const showLoader = () => { if (!document.getElementById('loader')) { document.body.insertAdjacentHTML('beforeend', '<div id="loader" style="backdrop-filter: blur(4px);" class="fixed inset-0 bg-slate-50/70 flex items-center justify-center z-50"><p class="text-lg font-medium">Загрузка...</p></div>'); } };
+    const hideLoader = () => { document.getElementById('loader')?.remove(); };
+
+    const fetchUserProfile = async (user) => {
+      if (!user) return 'user';
+      const { data, error } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+      if (error) { console.error("Ошибка получения профиля:", error.message); return 'user'; }
+      return data ? data.role : 'user';
+    };
+
+    const fetchMatches = async () => {
+        const { data, error } = await supabase.from('matches').select('*').order('created_at', { ascending: false });
+        if (error) { console.error('Ошибка загрузки матчей:', error); return []; }
+        return data.map(m => ({ id: m.id, date: m.date, league: m.league, patch: m.patch, winner: m.winner, blue: { team: m.blue_team, picks: m.blue_picks || [], bans: m.blue_bans || [] }, red: { team: m.red_team, picks: m.red_picks || [], bans: m.red_bans || [] } }));
+    };
+
+    const handleSessionChange = async (session, event) => {
+        showLoader();
         currentUser = session?.user ?? null;
-        await fetchUserProfile();
-        if (currentUser) {
-            allMatches = await fetchMatches();
+        currentUserRole = await fetchUserProfile(currentUser);
+
+        if (currentUser && (currentUserRole === 'admin' || currentUserRole === 'viewer')) {
+            if (allMatches.length === 0) {
+                allMatches = await fetchMatches();
+            }
+            authContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            userEmailEl.textContent = currentUser.email;
+            if (currentUserRole === 'admin') {
+                inputTabBtn.classList.remove('hidden');
+            } else {
+                inputTabBtn.classList.add('hidden');
+            }
         } else {
-            allMatches = []; // Очищаем данные при выходе
+            allMatches = [];
+            authContainer.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+            if (currentUser && event === 'SIGNED_IN') {
+                alert('Ваш аккаунт ожидает одобрения администратором.');
+                await supabase.auth.signOut();
+            }
         }
-        updateUIForSession();
         refreshUI();
-    });
-
-    const { data: { session } } = await supabase.auth.getSession();
-    currentUser = session?.user ?? null;
-    await fetchUserProfile();
+        hideLoader();
+    };
     
-    if (currentUser && (currentUserRole === 'admin' || currentUserRole === 'viewer')) {
-      allMatches = await fetchMatches();
-    }
-    
-    document.getElementById('loader')?.remove();
-    updateUIForSession();
-    refreshUI();
-  }
+    (function initializeStaticElements() {
+        const THEME_KEY = 'mlbb_theme';
+        const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+        if (savedTheme === 'dark') document.body.classList.add('dark');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            localStorage.setItem(THEME_KEY, document.body.classList.contains('dark') ? 'dark' : 'light');
+        });
+        imgBaseInput.value = getImgBase();
+        imgBaseInput.addEventListener('change', () => setImgBase(imgBaseInput.value.trim() || './portraits/'));
+        const initialDraft = readFormDraft();
+        if (initialDraft) { applyFormDraft(initialDraft);
+        } else { buildRows(blueBansEl, banRowTpl, 5); buildRows(redBansEl, banRowTpl, 5); buildRows(bluePicksEl, pickRowTpl, 5); buildRows(redPicksEl, pickRowTpl, 5); }
+        showLoginBtn.addEventListener('click', () => {
+            loginForm.classList.remove('hidden'); signupForm.classList.add('hidden');
+            showLoginBtn.classList.add('border-slate-900', 'font-semibold'); showLoginBtn.classList.remove('text-slate-500');
+            showSignupBtn.classList.remove('border-slate-900', 'font-semibold'); showSignupBtn.classList.add('text-slate-500');
+        });
+        showSignupBtn.addEventListener('click', () => {
+            signupForm.classList.remove('hidden'); loginForm.classList.add('hidden');
+            showSignupBtn.classList.add('border-slate-900', 'font-semibold'); showSignupBtn.classList.remove('text-slate-500');
+            showLoginBtn.classList.remove('border-slate-900', 'font-semibold'); showLoginBtn.classList.add('text-slate-500');
+        });
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) { alert('Ошибка регистрации: ' + error.message);
+            } else { alert('Регистрация успешна! Проверьте почту для подтверждения, а затем дождитесь одобрения администратора.'); signupForm.reset(); showLoginBtn.click(); }
+        });
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) { alert('Ошибка входа: ' + error.message); }
+        });
+        logoutBtn.addEventListener('click', async () => { await supabase.auth.signOut(); });
+    })();
 
-  initializeApp();
+    supabase.auth.onAuthStateChange((event, session) => { handleSessionChange(session, event); });
+    
+    function getImgBase(){ return localStorage.getItem(LS_IMG) || './portraits/'; }
+    function setImgBase(v){ localStorage.setItem(LS_IMG, v); }
+    function heroSlug(name){ return name.replace(/\./g,'_').replace(/'/g,'').replace(/\s+/g,'_'); }
+    function heroImg(name){ return getImgBase() + heroSlug(name) + '.png'; }
+    function getCanonicalHero(name){ if(!name) return ''; const n=name.trim().toLowerCase(); return HEROES.find(h=>h.toLowerCase()===n) || ''; }
+    function normalizeHero(name){ return getCanonicalHero(name) || ''; }
+    function pct(n,d){ return d? (100*n/d):0; }
+    function fmtPct(v){ return isFinite(v)? v.toFixed(1)+'%':'—'; }
+    function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+    async function deleteMatch(id) { if (!confirm('Вы уверены, что хотите удалить этот матч?')) return; const { error } = await supabase.from('matches').delete().eq('id', id); if (error) { console.error('Ошибка удаления:', error); alert('Не удалось удалить матч: ' + error.message); return; } allMatches = allMatches.filter(m => m.id !== id); refreshUI(); alert('Матч удален.'); }
+    const tabs = { input: document.getElementById('tab-input'), stats: document.getElementById('tab-stats'), matches: document.getElementById('tab-matches') };
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => { btn.addEventListener('click', () => { if (btn.id === 'inputTabBtn' && currentUserRole !== 'admin') return; tabBtns.forEach(b => b.classList.remove('bg-slate-900', 'text-white')); btn.classList.add('bg-slate-900', 'text-white'); const key = btn.dataset.tab; Object.entries(tabs).forEach(([k, el]) => el.classList.toggle('hidden', k !== key)); if (key === 'stats') rebuildFiltersAndStats(allMatches); if (key === 'matches') renderFilteredMatches(); }); });
+    function attachCombobox(wrapper, inputEl){ const list = wrapper.querySelector('.combo-list'); let active = -1; function produce(q){ const qq=(q||'').trim().toLowerCase(); let items = HEROES; if (qq){ const starts = HEROES.filter(h => h.toLowerCase().startsWith(qq)); items = starts.length ? starts : HEROES.filter(h => h.toLowerCase().includes(qq)); } return items.slice(0,100); } function render(q){ const items = produce(q); if(!items.length){ list.classList.add('hidden'); list.innerHTML=''; return; } list.innerHTML = items.map((h,i)=>`<div class="combo-item" data-idx="${i}" data-value="${h}"><img src="${heroImg(h)}" alt=""/><span>${h}</span></div>`).join(''); list.classList.remove('hidden'); active=-1; list.querySelectorAll('.combo-item').forEach(div=>{ div.addEventListener('click',()=>{ inputEl.value=div.dataset.value; list.classList.add('hidden'); saveDraftDebounced(); }); }); } function moveActive(delta){ const items=[...list.querySelectorAll('.combo-item')]; if(!items.length) return; active=(active+delta+items.length)%items.length; items.forEach((el,i)=> el.setAttribute('aria-selected', i===active?'true':'false')); items[active].scrollIntoView({block:'nearest'}); } inputEl.addEventListener('keydown',(e)=>{ if(list.classList.contains('hidden')) return; if(e.key==='ArrowDown'){e.preventDefault();moveActive(1);} if(e.key==='ArrowUp'){e.preventDefault();moveActive(-1);} if(e.key==='Enter'&&active>=0){e.preventDefault();const el=list.querySelectorAll('.combo-item')[active]; if(el){ inputEl.value=el.dataset.value; list.classList.add('hidden'); saveDraftDebounced(); }} if(e.key==='Escape'){ list.classList.add('hidden'); }}); inputEl.addEventListener('input', ()=> render(inputEl.value)); inputEl.addEventListener('focus', ()=> render(inputEl.value)); inputEl.addEventListener('blur', ()=> setTimeout(()=>list.classList.add('hidden'), 150)); }
+    function buildRows(container, tpl, count, prefill=[]) { container.innerHTML=''; for(let i=1;i<=count;i++){ const node = tpl.content.cloneNode(true); node.querySelector('.ord').textContent = i; const input = node.querySelector('input'); attachCombobox(node.querySelector('.combo'), input); const item = prefill[i-1]; if (item && item.hero) { input.value = item.hero; const roleSel = node.querySelector('select.pickRole'); if (roleSel && item.role) roleSel.value = item.role; } container.appendChild(node); } }
+    function readFormDraft(){ try { return JSON.parse(localStorage.getItem(LS_FORM)) || null; } catch { return null; } }
+    function writeFormDraft(d){ localStorage.setItem(LS_FORM, JSON.stringify(d)); }
+    function getFormData(){ const f=document.getElementById('matchForm'); function collectFrom(container){ return Array.from(container.querySelectorAll('.flex.items-center')).map((row,idx)=>{ const hero = normalizeHero(row.querySelector('input')?.value||''); if(!hero) return null; const obj = {hero, order: idx+1}; const roleSel=row.querySelector('select.pickRole'); if(roleSel) obj.role = roleSel.value||''; return obj; }).filter(Boolean); } return { league: f.league.value || '', patch: f.patch.value || '', date: f.date.value || '', winner: (f.winner.value||''), blueTeam: f.blueTeam.value || '', redTeam: f.redTeam.value || '', blue: { bans: collectFrom(blueBansEl), picks: collectFrom(bluePicksEl) }, red:  { bans: collectFrom(redBansEl),  picks: collectFrom(redPicksEl) } }; }
+    function applyFormDraft(d){ if(!d) return; const f=document.getElementById('matchForm'); f.league.value=d.league||''; f.patch.value=d.patch||''; f.date.value=d.date||''; f.blueTeam.value=d.blueTeam||''; f.redTeam.value=d.redTeam||''; if(d.winner){ const wEls=f.querySelectorAll('input[name=winner]'); wEls.forEach(el=> el.checked = (el.value===d.winner)); } else { f.querySelectorAll('input[name=winner]').forEach(el=> el.checked=false); } buildRows(blueBansEl, banRowTpl, 5, d.blue?.bans||[]); buildRows(redBansEl,  banRowTpl, 5, d.red?.bans||[]); buildRows(bluePicksEl, pickRowTpl, 5, d.blue?.picks||[]); buildRows(redPicksEl,  pickRowTpl, 5, d.red?.picks||[]); }
+    const saveDraftDebounced = debounce(()=> writeFormDraft(getFormData()), 250);
+    document.addEventListener('input', (e)=>{ const form = document.getElementById('matchForm'); if (form && form.contains(e.target)) saveDraftDebounced(); });
+    document.addEventListener('change', (e)=>{ const form = document.getElementById('matchForm'); if (form && form.contains(e.target)) saveDraftDebounced(); });
+    document.getElementById('resetForm').addEventListener('click', () => { const keep = readFormDraft() || {}; keep.blue = {bans:[], picks:[]}; keep.red = {bans:[], picks:[]}; keep.winner=''; writeFormDraft(keep); applyFormDraft(keep); });
+    document.getElementById('matchForm').addEventListener('submit', async (e) => { e.preventDefault(); if (currentUserRole !== 'admin') { alert('Только администратор может сохранять матчи.'); return; } const f = e.currentTarget; function collect(container, type) { return Array.from(container.querySelectorAll('.flex.items-center')).map((row, idx) => { const hero = normalizeHero(row.querySelector('input')?.value || ''); if (!hero) return null; const obj = { hero, order: idx + 1 }; if (type === 'picks') { const roleSel = row.querySelector('select.pickRole'); obj.role = roleSel ? roleSel.value || '' : ''; } return obj; }).filter(Boolean); } const matchDataForDB = { date: f.date.value || null, league: f.league.value.trim(), patch: f.patch.value.trim(), winner: f.winner.value, blue_team: f.blueTeam.value.trim(), red_team: f.redTeam.value.trim(), blue_bans: collect(blueBansEl, 'bans'), blue_picks: collect(bluePicksEl, 'picks'), red_bans: collect(redBansEl, 'bans'), red_picks: collect(redPicksEl, 'picks') }; if (!matchDataForDB.blue_team || !matchDataForDB.red_team) return alert('Укажите названия команд.'); if (!matchDataForDB.league || !matchDataForDB.patch) return alert('Лига и патч обязательны.'); if (!matchDataForDB.winner) return alert('Укажите победителя.'); const { data, error } = await supabase.from('matches').insert([matchDataForDB]).select().single(); if (error) { console.error('Ошибка сохранения матча:', error); alert('Не удалось сохранить матч: ' + error.message); return; } alert('Матч сохранён!'); const newMatch = { id: data.id, date: data.date, league: data.league, patch: data.patch, winner: data.winner, blue: { team: data.blue_team, picks: data.blue_picks, bans: data.blue_bans }, red: { team: data.red_team, picks: data.red_picks, bans: data.red_bans } }; allMatches.unshift(newMatch); refreshUI(); const keep = { ...readFormDraft(), blue:{bans:[],picks:[]}, red:{bans:[],picks:[]}, winner:'' }; writeFormDraft(keep); applyFormDraft(keep); });
+    function heroChip(name){ return `<span class='inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100'><img src='${heroImg(name)}' class='inline-preview'/>${name}</span>`; }
+    function heroChipBan(name){ return `<span class='inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-100 dark:bg-rose-900/50 text-slate-700 dark:text-slate-300 line-through'><img src='${heroImg(name)}' class='inline-preview opacity-60'/>${name}</span>`; }
+    function matchCardHTML(m){ const isAdmin = currentUserRole === 'admin'; const deleteButtonHTML = isAdmin ? `<button data-action='del' data-id='${m.id}' class='px-3 py-1.5 rounded-xl bg-rose-600 text-white'>Удалить</button>` : ''; return `<div class='rounded-2xl ring-1 ring-slate-200 bg-white p-4'><div class='flex items-center justify-between gap-2'><div><div class='text-xs text-slate-500'>${m.league} • Патч ${m.patch} • ${m.date||'—'}</div><div class='font-medium mt-1'>${m.blue.team} <span class='text-xs ${m.winner==='blue'?'text-emerald-600':'text-slate-400'}'>${m.winner==='blue'?'(W)':''}</span> — ${m.red.team} <span class='text-xs ${m.winner==='red'?'text-emerald-600':'text-slate-400'}'>${m.winner==='red'?'(W)':''}</span></div></div>${deleteButtonHTML}</div><div class='mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 text-sm'><div class='space-y-2'><div class='text-xs text-slate-500'>Синяя команда</div><div class='grid grid-cols-3 sm:grid-cols-5 gap-1'>${m.blue.bans.map(x=>heroChipBan(x.hero)).join('')}</div><div class='grid grid-cols-3 sm:grid-cols-5 gap-1'>${m.blue.picks.map(x=>heroChip(x.hero)).join('')}</div></div><div class='space-y-2'><div class='text-xs text-slate-500'>Красная команда</div><div class='grid grid-cols-3 sm:grid-cols-5 gap-1'>${m.red.bans.map(x=>heroChipBan(x.hero)).join('')}</div><div class='grid grid-cols-3 sm:grid-cols-5 gap-1'>${m.red.picks.map(x=>heroChip(x.hero)).join('')}</div></div></div></div>`; }
+    function refreshMatchesList(matches) { if (!matches || !matches.length) { matchesListEl.innerHTML='<div class="text-sm text-slate-500 text-center py-4">Матчей по этому фильтру не найдено.</div>'; return; } matchesListEl.innerHTML = matches.map(matchCardHTML).join(''); matchesListEl.querySelectorAll('[data-action=del]')?.forEach(b => { b.onclick = () => deleteMatch(b.dataset.id); }); }
+    function renderFilteredMatches() { const selectedTeam = filterMatchesTeam.value; if (!selectedTeam) { refreshMatchesList(allMatches); return; } const filtered = allMatches.filter(m => m.blue.team === selectedTeam || m.red.team === selectedTeam); refreshMatchesList(filtered); }
+    filterMatchesTeam.addEventListener('input', renderFilteredMatches);
+    function collectFilters(matches){ const teams=new Set(); matches.forEach(m=>{ if(m.blue?.team)teams.add(m.blue.team); if(m.red?.team)teams.add(m.red.team); }); const leagues=new Set(matches.map(m=>m.league)); const patches=new Set(matches.map(m=>m.patch)); return { leagues:['Все',...leagues], patches:['Все',...patches], teams:['Все',...teams] }; }
+    function setOptions(sel,arr){ const cur=sel.value; sel.innerHTML=arr.map(v=>`<option value='${v==='Все'?'':v}'>${v}</option>`).join(''); if(Array.from(sel.options).some(o=>o.value===cur)) sel.value = cur; }
+    function applyFilters(matches, {league,patch,team,side}){ return matches.filter(m=>{ if (league && league!=='Все' && m.league!==league) return false; if (patch && patch!=='Все' && m.patch!==patch) return false; if (team && team!=='Все' && !(m.blue.team===team || m.red.team===team)) return false; return true; }); }
+    function aggregate(matches, filters) { const map=new Map(); function ens(h){ if(!map.has(h)) map.set(h,{hero:h,picks:0,wins:0,losses:0,bans:0,presence:0}); return map.get(h); } matches.forEach(m => { const shouldProcessBlue = (!filters.side || filters.side === 'blue') && (!filters.team || m.blue.team === filters.team); const shouldProcessRed = (!filters.side || filters.side === 'red') && (!filters.team || m.red.team === filters.team); if (shouldProcessBlue) { const winSide = m.winner; m.blue.picks.forEach(p=>{ const h=p.hero; const s=ens(h); s.picks++; s.presence++; if(winSide==='blue') s.wins++; else s.losses++; }); m.blue.bans.forEach(b=>{ const s=ens(b.hero); s.bans++; s.presence++; }); } if (shouldProcessRed) { const winSide = m.winner; m.red.picks.forEach(p=>{ const h=p.hero; const s=ens(h); s.picks++; s.presence++; if(winSide==='red') s.wins++; else s.losses++; }); m.red.bans.forEach(b=>{ const s=ens(b.hero); s.bans++; s.presence++; }); } }); return Array.from(map.values()); }
+    function renderStats(){ const filters= {league:filterLeague.value||'', patch:filterPatch.value||'', team:filterTeam.value||'', side:filterSide.value||''}; const matches=applyFilters(allMatches, filters); const rows = aggregate(matches, filters).filter(r=> !searchHero.value || r.hero.toLowerCase().startsWith(searchHero.value.toLowerCase())).sort((a,b)=> (b.presence-a.presence)||(b.picks-a.picks)); statsBody.innerHTML = rows.map(r=>{ const wr = r.picks ? fmtPct(pct(r.wins, r.picks)) : '—'; return `<tr class='hover:bg-slate-50 cursor-pointer' data-hero='${r.hero}'><td class='px-4 py-2'><div class='flex items-center gap-2'><img src='${heroImg(r.hero)}' class='inline-preview'/>${r.hero}</div></td><td class='px-4 py-2 text-right'>${r.picks}</td><td class='px-4 py-2 text-right'>${r.wins}</td><td class='px-4 py-2 text-right'>${r.losses}</td><td class='px-4 py-2 text-right'>${wr}</td><td class='px-4 py-2 text-right'>${r.bans}</td><td class='px-4 py-2 text-right'>${r.presence}</td></tr>`; }).join(''); statsBody.querySelectorAll('tr[data-hero]')?.forEach(tr=> tr.addEventListener('click', ()=> openHeroModal(tr.dataset.hero, matches))); }
+    [filterLeague,filterPatch,filterTeam,filterSide,searchHero].forEach(el=> el.addEventListener('input', renderStats));
+    function rebuildFiltersAndStats(matches){ const f=collectFilters(matches); setOptions(filterLeague,f.leagues); setOptions(filterPatch,f.patches); setOptions(filterTeam,f.teams); setOptions(filterMatchesTeam, f.teams); renderStats(); renderFilteredMatches(); }
+    function topN(map,n,{best=true,minGames=2}={}){ const arr=[...map.entries()].map(([name,o])=>({name, games:o.games, wins:o.wins, wr:o.games?o.wins*100/o.games:0})).filter(x=>x.games>=minGames).sort((a,b)=> best? (b.wr-a.wr||b.games-a.games):(a.wr-b.wr||b.games-a.games)); return arr.slice(0,n); }
+    function calcHeroDetails(hero, matches){ const d={hero, picks:0,wins:0,losses:0,bans:0, roles:new Map(), synergy:new Map(), vs:new Map(), draft:{pick:new Map(),ban:new Map()}}; function roleEns(r){ if(!d.roles.has(r)) d.roles.set(r,{games:0,wins:0,losses:0}); return d.roles.get(r); } function inc(map,key,win){ if(!map.has(key)) map.set(key,{games:0,wins:0}); const o=map.get(key); o.games++; if(win) o.wins++; } matches.forEach(m=>{ const winBlue=m.winner==='blue'; const blueHas=m.blue.picks.some(p=>p.hero===hero); const redHas=m.red.picks.some(p=>p.hero===hero); m.blue.picks.forEach(p=>{ if(p.hero===hero){ d.picks++; if(winBlue) d.wins++; else d.losses++; if(p.role){ const rs=roleEns(p.role); rs.games++; if(winBlue) rs.wins++; else rs.losses++; } d.draft.pick.set(`B${p.order}`,(d.draft.pick.get(`B${p.order}`)||0)+1);} }); m.red.picks.forEach(p=>{ if(p.hero===hero){ d.picks++; if(!winBlue) d.wins++; else d.losses++; if(p.role){ const rs=roleEns(p.role); rs.games++; if(!winBlue) rs.wins++; else rs.losses++; } d.draft.pick.set(`R${p.order}`,(d.draft.pick.get(`R${p.order}`)||0)+1);} }); m.blue.bans.forEach(b=>{ if(b.hero===hero){ d.bans++; d.draft.ban.set(`B${b.order}`,(d.draft.ban.get(`B${b.order}`)||0)+1);} }); m.red.bans.forEach(b=>{ if(b.hero===hero){ d.bans++; d.draft.ban.set(`R${b.order}`,(d.draft.ban.get(`R${b.order}`)||0)+1);} }); if(blueHas){ m.blue.picks.filter(x=>x.hero!==hero).forEach(a=>inc(d.synergy,a.hero,winBlue)); m.red.picks.forEach(e=>inc(d.vs,e.hero,winBlue)); } if(redHas){ m.red.picks.filter(x=>x.hero!==hero).forEach(a=>inc(d.synergy,a.hero,!winBlue)); m.blue.picks.forEach(e=>inc(d.vs,e.hero,!winBlue)); } }); return d; }
+    function renderKV(items){ if(!items.length) return '<div class="text-slate-500 text-xs">Недостаточно данных</div>'; return items.map(x=>`<div class='flex items-center justify-between gap-2'><div class='flex items-center gap-2 min-w-0'><img src='${heroImg(x.name)}' class='inline-preview'/><div class='truncate'>${x.name}</div></div><div class='text-right text-slate-600 whitespace-nowrap'>${x.games} игр • ${x.wins}W • ${fmtPct(x.wr)}</div></div>`).join(''); }
+    function renderDraft(map,title){ const order=['B1','B2','B3','B4','B5','R1','R2','R3','R4','R5']; return `<div><div class='font-medium mb-1'>${title}</div><div class='grid grid-cols-5 gap-1 text-sm'>${order.map(k=>`<div class='px-2 py-1 rounded-lg bg-white ring-1 ring-slate-200 text-center'><div class='text-[10px] text-slate-500'>${k}</div><div>${map.get(k)||0}</div></div>`).join('')}</div></div>`; }
+    function openHeroModal(hero, matches){ const d=calcHeroDetails(hero, matches); const wr = d.picks? fmtPct(pct(d.wins,d.picks)):'—'; document.getElementById('modalHeroName').innerHTML = `<div class='flex items-center gap-2'><img src='${heroImg(hero)}' class='inline-preview'/> <span>${hero}</span></div>`; document.getElementById('modalHeroSubtitle').textContent = `Игры: ${d.picks} • Победы: ${d.wins} • Поражения: ${d.losses} • Винрейт: ${wr} • Баны: ${d.bans}`; document.getElementById('modalSummary').innerHTML = `<div class='space-y-1'><div class='flex items-center justify-between'><span>Игр</span><span class='font-medium'>${d.picks}</span></div><div class='flex items-center justify-between'><span>Победы</span><span class='font-medium'>${d.wins}</span></div><div class='flex items-center justify-between'><span>Поражения</span><span class='font-medium'>${d.losses}</span></div><div class='flex items-center justify-between'><span>Винрейт</span><span class='font-medium'>${wr}</span></div><div class='flex items-center justify-between'><span>Баны</span><span class='font-medium'>${d.bans}</span></div><div class='flex items-center justify-between'><span>Присутствие</span><span class='font-medium'>${d.picks + d.bans}</span></div></div>`; const rolesOrder=['exp','jungle','mid','roam','gold']; const labels={exp:'EXP',jungle:'Jungle',mid:'Mid',roam:'Roam',gold:'Gold'}; document.getElementById('modalRoles').innerHTML = rolesOrder.map(r=>{ const rs=d.roles.get(r)||{games:0,wins:0,losses:0}; const wr= rs.games? fmtPct(pct(rs.wins,rs.games)):'—'; return `<div class='rounded-lg bg-white ring-1 ring-slate-200 p-3'><div class='text-xs text-slate-500'>${labels[r]}</div><div class='mt-1 text-sm'>${rs.games} игр • ${rs.wins}W/${rs.losses}L • ${wr}</div></div>`; }).join(''); document.getElementById('modalSynergy').innerHTML = renderKV(topN(d.synergy,10,{best:true})); document.getElementById('modalBestVs').innerHTML = renderKV(topN(d.vs,5,{best:true})); document.getElementById('modalWorstVs').innerHTML = renderKV(topN(d.vs,5,{best:false})); document.getElementById('modalDraftPositions').innerHTML = `${renderDraft(d.draft.pick,'Пики по порядку')}${renderDraft(d.draft.ban,'Баны по порядку')}`; heroModal.classList.remove('hidden'); }
+    function refreshUI() { if (currentUser && (currentUserRole === 'admin' || currentUserRole === 'viewer')) { refreshMatchesList(allMatches); rebuildFiltersAndStats(allMatches); } }
+  });
   </script>
 </body>
 </html>
