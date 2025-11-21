@@ -36,10 +36,24 @@
   </div>
   <div id="app-container" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <header class="flex items-center justify-between mb-4 flex-wrap gap-4"><div class="flex items-center gap-4"><h1 class="text-2xl font-bold tracking-tight">MLBB Draft Tracker</h1><div id="draft-mode-toggle" class="inline-flex rounded-lg bg-slate-200 p-1"><button data-mode="standard" class="mode-btn px-3 py-1 text-sm font-semibold rounded-md bg-white shadow">Standard</button><button data-mode="brave" class="mode-btn px-3 py-1 text-sm font-semibold rounded-md">Brave Draft (MCC)</button></div></div><div class="flex items-center gap-4 flex-wrap"><div id="admin-tools" class="hidden items-center gap-2"><button id="exportBtn" class="px-3 py-2 text-sm rounded-xl bg-slate-200">Экспорт JSON</button><label class="px-3 py-2 text-sm rounded-xl bg-slate-200 cursor-pointer">Импорт JSON<input id="importInput" type="file" accept="application/json" class="hidden" /></label><button id="deleteAllBtn" class="px-3 py-2 text-sm rounded-xl bg-rose-600 text-white">Удалить всё</button></div><div id="userInfo" class="text-sm flex items-center gap-3"><span id="userEmail" class="text-slate-600"></span><button id="logoutBtn" class="px-3 py-2 rounded-xl bg-slate-200">Выйти</button></div><input id="imgBaseInput" class="hidden sm:block w-64 px-3 py-2 rounded-xl bg-slate-100" placeholder="Папка портретов: ./portraits/" /><button id="themeToggle" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300" title="Тёмная/светлая тема">🌙</button></div></header>
-    <nav class="inline-flex rounded-2xl bg-white shadow ring-1 ring-slate-200 overflow-hidden mb-4"><button data-tab="stats" class="tab-btn px-4 py-2 text-sm font-medium bg-slate-900 text-white">Статистика</button><button data-tab="matches" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100">Матчи</button><button data-tab="matchups" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100">Матчапы</button><button id="inputTabBtn" data-tab="input" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 hidden">Ввод матча</button></nav>
+    <nav class="inline-flex rounded-2xl bg-white shadow ring-1 ring-slate-200 overflow-hidden mb-4 overflow-x-auto">
+      <button data-tab="stats" class="tab-btn px-4 py-2 text-sm font-medium bg-slate-900 text-white whitespace-nowrap">Статистика</button>
+      <button data-tab="matches" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 whitespace-nowrap">Матчи</button>
+      <button data-tab="matchups" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 whitespace-nowrap">Матчапы</button>
+      <button data-tab="team-analysis" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 whitespace-nowrap">Анализ Команды</button>
+      <button id="inputTabBtn" data-tab="input" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 hidden whitespace-nowrap">Ввод матча</button>
+    </nav>
+    
+    <!-- ВВОД МАТЧА -->
     <section id="tab-input" class="hidden fade-in"><form id="matchForm" class="space-y-6"><div class="grid grid-cols-1 md:grid-cols-5 gap-4"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Лига</label><input name="league" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="MPL / MDL…" required /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Патч</label><input name="patch" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="напр. 1.8.80" required /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Дата</label><input type="date" name="date" class="w-full px-3 py-2 rounded-xl bg-slate-100" /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Тип карты</label><select name="terrain" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Не указан</option><option value="стены">Стены</option><option value="облака">Облака</option><option value="река">Река</option><option value="кусты">Кусты</option></select></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Победитель</label><div class="flex items-center gap-4 mt-2"><label class="inline-flex items-center gap-2"><input type="radio" name="winner" value="blue"/> Синяя</label><label class="inline-flex items-center gap-2"><input type="radio" name="winner" value="red"/> Красная</label></div></div></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Режим драфта</label><div class="flex items-center gap-4 mt-2"><label class="inline-flex items-center gap-2"><input type="radio" name="draft_mode" value="standard" checked/> Standard</label><label class="inline-flex items-center gap-2"><input type="radio" name="draft_mode" value="brave"/> Brave Draft</label></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><h2 class="font-semibold mb-2">Синяя команда</h2><input name="blueTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100 mb-3" placeholder="Blue Team" required /><div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><div><div class="text-sm font-medium mb-1">Баны (5)</div><div id="blueBans" class="space-y-2"></div></div><div><div class="text-sm font-medium mb-1">Пики (5)</div><div id="bluePicks" class="space-y-2"></div></div></div></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><h2 class="font-semibold mb-2">Красная команда</h2><input name="redTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100 mb-3" placeholder="Red Team" required /><div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><div><div class="text-sm font-medium mb-1">Баны (5)</div><div id="redBans" class="space-y-2"></div></div><div><div class="text-sm font-medium mb-1">Пики (5)</div><div id="redPicks" class="space-y-2"></div></div></div></div></div><div class="flex items-center gap-3"><button id="saveMatchBtn" class="px-4 py-2 rounded-xl bg-emerald-600 text-white" type="submit">Сохранить матч</button><button id="resetForm" class="px-4 py-2 rounded-xl bg-slate-200" type="button">Очистить форму</button><button id="cancelEditBtn" class="px-4 py-2 rounded-xl bg-amber-500 text-white hidden" type="button">Отмена</button></div></form></section>
+    
+    <!-- ОБЩАЯ СТАТИСТИКА -->
     <section id="tab-stats" class="hidden fade-in"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 mb-4"><div class="grid grid-cols-1 md:grid-cols-7 gap-3"><div><label class="block text-xs font-medium mb-1">Лига</label><select id="filterLeague" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Патч</label><select id="filterPatch" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Команда</label><select id="filterTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Сторона</label><select id="filterSide" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Все</option><option value="blue">Синяя</option><option value="red">Красная</option></select></div><div><label class="block text-xs font-medium mb-1">Роль</label><select id="filterRole" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Все роли</option><option value="exp">EXP</option><option value="jungle">Jungle</option><option value="mid">Mid</option><option value="roam">Roam</option><option value="gold">Gold</option></select></div><div><label class="block text-xs font-medium mb-1">Карта</label><select id="filterTerrain" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Все карты</option><option value="стены">Стены</option><option value="облака">Облака</option><option value="река">Река</option><option value="кусты">Кусты</option></select></div><div><label class="block text-xs font-medium mb-1">Поиск героя</label><input id="searchHero" placeholder="Введите имя" class="w-full px-3 py-2 rounded-xl bg-slate-100" /></div></div></div><div class="bg-white rounded-2xl shadow ring-1 ring-slate-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="bg-slate-100 text-slate-600"><tr><th class="px-4 py-2 text-left sortable" data-sort="hero"><span>Герой</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable sorted" data-sort="presence"><span>Присутствие</span><span class="sort-icon">▼</span></th><th class="px-4 py-2 text-right sortable" data-sort="picks"><span>Игр</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable" data-sort="winrate"><span>Винрейт</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable" data-sort="wins"><span>Победы</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable" data-sort="losses"><span>Поражения</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable" data-sort="bans"><span>Баны</span><span class="sort-icon"></span></th></tr></thead><tbody id="statsBody" class="divide-y divide-slate-100"></tbody></table></div><div class="p-3 text-xs text-slate-500">Нажмите на заголовок для сортировки. Нажмите на героя для подробностей.</div></div></section>
+    
+    <!-- СПИСОК МАТЧЕЙ -->
     <section id="tab-matches" class="hidden fade-in"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4"><div><label class="block text-xs font-medium mb-1">Фильтр по команде</label><select id="filterMatchesTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Фильтр по лиге</label><select id="filterMatchesLeague" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Фильтр по герою</label><select id="filterMatchesHero" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Тип участия</label><select id="filterMatchesType" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="presence">Пики и Баны</option><option value="pick">Только пики</option></select></div></div><div id="matchesList" class="grid gap-3"></div></div></section>
+    
+    <!-- МАТЧАПЫ И СИНЕРГИЯ -->
     <section id="tab-matchups" class="hidden fade-in">
       <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -103,6 +117,150 @@
         </div>
       </div>
     </section>
+
+    <!-- АНАЛИЗ КОМАНДЫ -->
+    <section id="tab-team-analysis" class="hidden fade-in">
+      <div class="space-y-4">
+        <!-- Фильтры -->
+        <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-medium mb-1">Выберите команду</label>
+              <select id="analysisTeamSelect" class="w-full px-3 py-2 rounded-xl bg-slate-100 font-bold"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium mb-1">Лига</label>
+              <select id="analysisLeague" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium mb-1">Патч</label>
+              <select id="analysisPatch" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select>
+            </div>
+          </div>
+        </div>
+
+        <div id="teamAnalysisContent" class="hidden space-y-4">
+          <!-- Общая сводка -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 flex flex-col justify-center items-center">
+              <div class="text-sm text-slate-500">Всего игр</div>
+              <div id="ta-total-games" class="text-3xl font-bold">0</div>
+              <div id="ta-winrate" class="text-sm font-medium mt-1">0% WR</div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+              <div class="text-xs text-slate-500 mb-2">Стороны</div>
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-blue-600 font-bold">Синяя</span>
+                <span id="ta-blue-wr"></span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 mb-3">
+                <div id="ta-blue-bar" class="bg-blue-500 h-2 rounded-full" style="width: 50%"></div>
+              </div>
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-red-600 font-bold">Красная</span>
+                <span id="ta-red-wr"></span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2">
+                <div id="ta-red-bar" class="bg-red-500 h-2 rounded-full" style="width: 50%"></div>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+              <div class="text-xs text-slate-500 mb-2">First Pick (FP) Статистика</div>
+              <div class="text-center mb-2">
+                <div id="ta-fp-games" class="font-medium text-sm"></div>
+                <div id="ta-fp-wr" class="text-xl font-bold text-emerald-600"></div>
+              </div>
+              <div class="border-t border-slate-100 pt-2">
+                <div class="text-[10px] text-slate-400 uppercase tracking-wide mb-1">Топ FP Герои</div>
+                <div id="ta-fp-top-heroes" class="space-y-1"></div>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+              <div class="text-xs text-slate-500 mb-2">Стиль драфта</div>
+              <div class="space-y-2 text-sm">
+                 <div class="flex justify-between"><span>Приоритет Фулл Пати:</span> <span id="ta-style-trio" class="font-medium"></span></div>
+                 <div class="flex justify-between"><span>Флекс пики:</span> <span id="ta-style-flex" class="font-medium"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Пики и Фазы -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+              <h3 class="font-bold text-lg mb-3">Приоритеты Пика (Топ-7)</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                  <thead class="text-xs text-slate-500 bg-slate-50 uppercase">
+                    <tr>
+                      <th class="px-2 py-2">Герой</th>
+                      <th class="px-2 py-2 text-center">Пиков</th>
+                      <th class="px-2 py-2 text-center">WR</th>
+                      <th class="px-2 py-2 text-center text-[10px]">Фаза 1 (1-3)</th>
+                      <th class="px-2 py-2 text-center text-[10px]">Фаза 2 (4-5)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ta-top-picks-body"></tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+              <h3 class="font-bold text-lg mb-3">Приоритеты Ролей (Стадия 1)</h3>
+              <p class="text-xs text-slate-500 mb-4">Какие роли команда забирает в первой тройке пиков?</p>
+              <div id="ta-role-priority" class="space-y-3"></div>
+            </div>
+          </div>
+
+          <!-- Баны и Ответы -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+             <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+              <h3 class="font-bold text-lg mb-3">Топ Баны (Против них / Ими)</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <div class="text-xs font-semibold text-center mb-2 text-rose-600">Они банят (Respect Ban)</div>
+                  <div id="ta-bans-by-them" class="space-y-1"></div>
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-center mb-2 text-slate-600">Против них банят</div>
+                  <div id="ta-bans-against-them" class="space-y-1"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+              <h3 class="font-bold text-lg mb-3">Анализ ситуации вокруг героя</h3>
+              <p class="text-xs text-slate-500 mb-2">Выберите героя, чтобы увидеть, как команда играет, когда он в бане или у противника.</p>
+              <div class="flex gap-2 mb-2">
+                <div class="combo flex-1"><input id="ta-condition-ban" class="w-full px-3 py-2 rounded-xl bg-slate-100 text-sm" placeholder="Выберите героя..." /><div class="combo-list hidden"></div></div>
+              </div>
+              <div id="ta-condition-results" class="text-sm space-y-2 mt-4 min-h-[100px]">
+                <span class="text-slate-400 text-xs">Ожидание выбора...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Связки -->
+          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+            <h3 class="font-bold text-lg mb-3">Лучшие Связки</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold text-sm mb-2 text-indigo-600">Дуо (2 героя)</h4>
+                <div id="ta-duos" class="space-y-1"></div>
+              </div>
+              <div>
+                <h4 class="font-semibold text-sm mb-2 text-indigo-600">Трио (3 героя)</h4>
+                <div id="ta-trios" class="space-y-1"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="teamAnalysisPlaceholder" class="text-center py-12 text-slate-500">
+          Выберите команду из списка выше для отображения аналитики.
+        </div>
+      </div>
+    </section>
+
   </div>
   <div id="heroModal" class="fixed inset-0 bg-black/40 z-50 hidden"><div class="min-h-full w-full flex items-center justify-center p-4"><div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl ring-1 ring-slate-200 overflow-hidden"><div class="flex items-center justify-between px-5 py-3 border-b"><div><h3 id="modalHeroName" class="text-lg font-semibold"></h3><p id="modalHeroSubtitle" class="text-xs text-slate-500"></p></div><button id="closeModal" class="p-2 rounded-lg hover:bg-slate-100">✕</button></div><div class="p-5 space-y-6 max-h-[75vh] overflow-y-auto scroll-thin"><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-1">Общее</div><div id="modalSummary" class="text-sm"></div></div><div class="bg-slate-50 rounded-xl p-4 md:col-span-2"><div class="text-xs text-slate-500 mb-2">Статистика по ролям</div><div id="modalRoles" class="text-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-2">Топ‑10 синергий (союзники)</div><div id="modalSynergy" class="text-sm space-y-1"></div></div><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-2">Матчапы</div><div class="grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm"><div><div class="font-medium mb-1">Лучше против</div><div id="modalBestVs" class="space-y-1"></div></div><div><div class="font-medium mb-1">Сложно против</div><div id="modalWorstVs" class="space-y-1"></div></div></div></div></div><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-2">Позиции в драфте</div><div id="modalDraftPositions" class="text-sm grid grid-cols-2 lg:grid-cols-4 gap-2"></div></div><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-2">Использование командами (пики)</div><div id="modalTeams" class="text-sm space-y-1"></div></div><div class="bg-slate-50 rounded-xl p-4"><div class="text-xs text-slate-500 mb-2">Статистика по картам</div><div id="modalTerrains" class="text-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2"></div></div></div></div></div></div>
   <template id="banRowTpl"><div class="flex items-center gap-2"><div class="w-10 text-xs text-slate-500">#<span class="ord"></span></div><div class="combo flex-1"><input class="banHero w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Герой" /><div class="combo-list hidden"></div></div></div></template>
@@ -174,6 +332,15 @@
     const matchupBestTeammatesForA_title = document.getElementById('matchupBestTeammatesForA_title');
     const matchupBestTeammatesForB_title = document.getElementById('matchupBestTeammatesForB_title');
     const matchupMatchFilter = document.getElementById('matchupMatchFilter');
+
+    // Team Analysis Elements
+    const tabTeamAnalysis = document.getElementById('tab-team-analysis');
+    const analysisTeamSelect = document.getElementById('analysisTeamSelect');
+    const analysisLeague = document.getElementById('analysisLeague');
+    const analysisPatch = document.getElementById('analysisPatch');
+    const teamAnalysisContent = document.getElementById('teamAnalysisContent');
+    const teamAnalysisPlaceholder = document.getElementById('teamAnalysisPlaceholder');
+    const taConditionBanInput = document.getElementById('ta-condition-ban');
 
     const HEROES = ["Aamon","Akai","Aldous","Alice","Alpha","Alucard","Angela","Argus","Arlott","Atlas","Aulus","Aurora","Badang","Balmond","Bane","Barats","Baxia","Beatrix","Belerick","Benedetta","Brody","Bruno","Carmilla","Cecilion","Chang'e","Chip","Chou","Cici","Claude","Clint","Cyclops","Diggie","Dyrroth","Edith","Esmeralda","Estes","Eudora","Fanny","Faramis","Floryn","Franco","Fredrinn","Freya","Gatotkaca","Gloo","Gord","Granger","Grock","Guinevere","Gusion","Hanabi","Hanzo","Harith","Harley","Hayabusa","Helcurt","Hilda","Hylos","Irithel","Ixia","Jawhead","Johnson","Joy","Julian","Kadita","Kagura","Kaja","Kalea","Karina","Karrie","Khaleed","Khufra","Kimmy","Lancelot","Lapu-Lapu","Layla","Leomord","Lesley","Ling","Lolita","Lukas","Lunox","Luo Yi","Lylia","Martis","Masha","Mathilda","Melissa","Minotaur","Minsitthar","Miya","Moskov","Nana","Natalia","Natan","Nolan","Novaria","Obsidia","Odette","Paquito","Pharsa","Phoveus","Popol and Kupa","Rafaela","Roger","Ruby","Saber","Selena","Silvanna","Sun","Suyou","Terizla","Thamuz","Tigreal","Uranus","Vale","Valentina","Valir","Vexana","Wanwan","X.Borg","Xavier","Yi Sun-shin","Yin","Yu Zhong","Yve","Zetian","Zhask","Zhuxin","Zilong"];
     const LS_IMG = 'mlbb_portraits_base_v1';
@@ -315,6 +482,7 @@
         draftModeToggle.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', () => handleModeChange(btn.dataset.mode));
         });
+        
         // Matchups listeners
         attachCombobox(matchupHeroAInput.parentElement, matchupHeroAInput);
         attachCombobox(matchupHeroBInput.parentElement, matchupHeroBInput);
@@ -323,6 +491,14 @@
             el.addEventListener('input', debouncedRenderMatchups);
             el.addEventListener('change', debouncedRenderMatchups);
         });
+
+        // Team Analysis listeners
+        [analysisTeamSelect, analysisLeague, analysisPatch].forEach(el => {
+            el.addEventListener('change', renderTeamAnalysis);
+        });
+        attachCombobox(taConditionBanInput.parentElement, taConditionBanInput);
+        taConditionBanInput.addEventListener('change', renderConditionalDraft);
+
     })();
 
     supabase.auth.onAuthStateChange((event, session) => { handleSessionChange(session, event); });
@@ -338,7 +514,13 @@
     function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
     async function deleteMatch(id) { if (!confirm('Вы уверены, что хотите удалить этот матч?')) return; showLoader(); const { error } = await supabase.from('matches').delete().eq('id', id); hideLoader(); if (error) { console.error('Ошибка удаления:', error); alert('Не удалось удалить матч: ' + error.message); return; } allMatches = allMatches.filter(m => m.id !== id); standardMatches = standardMatches.filter(m => m.id !== id); braveMatches = braveMatches.filter(m => m.id !== id); refreshUI(); alert('Матч удален.'); }
     
-    const tabs = { input: document.getElementById('tab-input'), stats: document.getElementById('tab-stats'), matches: document.getElementById('tab-matches'), matchups: document.getElementById('tab-matchups') };
+    const tabs = { 
+        input: document.getElementById('tab-input'), 
+        stats: document.getElementById('tab-stats'), 
+        matches: document.getElementById('tab-matches'), 
+        matchups: document.getElementById('tab-matchups'),
+        'team-analysis': document.getElementById('tab-team-analysis')
+    };
     const tabBtns = document.querySelectorAll('.tab-btn');
     tabBtns.forEach(btn => { 
         btn.addEventListener('click', () => { 
@@ -347,9 +529,17 @@
             btn.classList.add('bg-slate-900', 'text-white'); 
             const key = btn.dataset.tab; 
             Object.entries(tabs).forEach(([k, el]) => el.classList.toggle('hidden', k !== key)); 
+            
             if (key === 'stats') rebuildFiltersAndStats(getCurrentDataSet()); 
             if (key === 'matches') renderFilteredMatches();
             if (key === 'matchups') renderMatchups();
+            if (key === 'team-analysis') {
+                 const f = collectFilters(getCurrentDataSet());
+                 setOptions(analysisLeague, f.leagues);
+                 setOptions(analysisPatch, f.patches);
+                 analysisTeamSelect.innerHTML = '<option value="">-- Выберите команду --</option>' + f.teams.filter(t=>t !== 'Все').map(v=>`<option value='${v}'>${v}</option>`).join('');
+                 renderTeamAnalysis();
+            }
         }); 
     });
 
@@ -498,6 +688,326 @@
         matchupResultsContainer.classList.remove('hidden');
     }
     // --- END: Matchup Functions ---
+    
+    // --- START: Team Analysis Functions ---
+    function renderTeamAnalysis() {
+        const teamName = analysisTeamSelect.value;
+        const league = analysisLeague.value;
+        const patch = analysisPatch.value;
+
+        if (!teamName) {
+            teamAnalysisContent.classList.add('hidden');
+            teamAnalysisPlaceholder.classList.remove('hidden');
+            return;
+        }
+
+        teamAnalysisPlaceholder.classList.add('hidden');
+        teamAnalysisContent.classList.remove('hidden');
+
+        // 1. Filter Matches
+        let matches = getCurrentDataSet().filter(m => m.blue.team === teamName || m.red.team === teamName);
+        if (league) matches = matches.filter(m => m.league === league);
+        if (patch) matches = matches.filter(m => m.patch === patch);
+
+        // 2. Aggregate Stats
+        const stats = {
+            totalGames: matches.length,
+            wins: 0,
+            blue: { games: 0, wins: 0 },
+            red: { games: 0, wins: 0 },
+            fp: { games: 0, wins: 0 }, // First Pick (Blue side)
+            fpHeroes: new Map(), // Specific heroes taken on FP (Blue P1)
+            heroes: new Map(), // Picks
+            bansByThem: new Map(),
+            bansAgainstThem: new Map(),
+            rolePriorityPhase1: { exp:0, jungle:0, mid:0, roam:0, gold:0, total:0 },
+            combinations: { duo: new Map(), trio: new Map() },
+            flexPicks: 0 // Heroes played in >=2 roles
+        };
+
+        matches.forEach(m => {
+            const isBlue = m.blue.team === teamName;
+            const mySide = isBlue ? m.blue : m.red;
+            const enemySide = isBlue ? m.red : m.blue;
+            const isWin = (isBlue && m.winner === 'blue') || (!isBlue && m.winner === 'red');
+
+            if (isWin) stats.wins++;
+            
+            // Side Stats & FP
+            if (isBlue) { 
+                stats.blue.games++; if(isWin) stats.blue.wins++; 
+                stats.fp.games++; if(isWin) stats.fp.wins++; 
+                
+                // Track who was taken first (Blue P1)
+                const fpHero = mySide.picks[0]?.hero;
+                if (fpHero) {
+                    if (!stats.fpHeroes.has(fpHero)) stats.fpHeroes.set(fpHero, {games:0, wins:0});
+                    const fh = stats.fpHeroes.get(fpHero);
+                    fh.games++; if(isWin) fh.wins++;
+                }
+            } else { 
+                stats.red.games++; if(isWin) stats.red.wins++; 
+            }
+
+            // Process Picks
+            const myHeroes = [];
+            mySide.picks.forEach((p, idx) => {
+                myHeroes.push(p.hero);
+                if (!stats.heroes.has(p.hero)) stats.heroes.set(p.hero, { picks: 0, wins: 0, phase1: 0, phase2: 0, roles: new Set() });
+                const h = stats.heroes.get(p.hero);
+                h.picks++;
+                if (isWin) h.wins++;
+                if (p.role) h.roles.add(p.role);
+
+                // Draft Phase Logic (Phase 1: Indexes 0,1,2 | Phase 2: Indexes 3,4)
+                if (idx < 3) {
+                    h.phase1++;
+                    if (p.role) stats.rolePriorityPhase1[p.role]++;
+                    stats.rolePriorityPhase1.total++;
+                } else {
+                    h.phase2++;
+                }
+            });
+
+            // Process Bans (By Them)
+            mySide.bans.forEach(b => {
+                const k = b.hero;
+                if(!stats.bansByThem.has(k)) stats.bansByThem.set(k, 0);
+                stats.bansByThem.set(k, stats.bansByThem.get(k) + 1);
+            });
+
+            // Process Bans (Against Them)
+            enemySide.bans.forEach(b => {
+                const k = b.hero;
+                if(!stats.bansAgainstThem.has(k)) stats.bansAgainstThem.set(k, 0);
+                stats.bansAgainstThem.set(k, stats.bansAgainstThem.get(k) + 1);
+            });
+
+            // Process Combinations (DUO)
+            const uniqueHeroes = [...new Set(myHeroes)].sort(); // Ensure uniqueness and sorting
+            
+            for(let i=0; i<uniqueHeroes.length; i++) {
+                for(let j=i+1; j<uniqueHeroes.length; j++) {
+                    const key = [uniqueHeroes[i], uniqueHeroes[j]].join('+'); // Already sorted
+                    if(!stats.combinations.duo.has(key)) stats.combinations.duo.set(key, {games:0, wins:0, heroes:[uniqueHeroes[i], uniqueHeroes[j]]});
+                    const c = stats.combinations.duo.get(key); c.games++; if(isWin) c.wins++;
+                }
+            }
+            // Process Combinations (TRIO)
+            for(let i=0; i<uniqueHeroes.length; i++) {
+                for(let j=i+1; j<uniqueHeroes.length; j++) {
+                     for(let k=j+1; k<uniqueHeroes.length; k++) {
+                        const key = [uniqueHeroes[i], uniqueHeroes[j], uniqueHeroes[k]].join('+'); // Already sorted
+                        if(!stats.combinations.trio.has(key)) stats.combinations.trio.set(key, {games:0, wins:0, heroes:[uniqueHeroes[i], uniqueHeroes[j], uniqueHeroes[k]]});
+                        const c = stats.combinations.trio.get(key); c.games++; if(isWin) c.wins++;
+                     }
+                }
+            }
+        });
+
+        // Count flex picks
+        let flexCount = 0;
+        stats.heroes.forEach(h => { if(h.roles.size >= 2) flexCount++; });
+
+        // --- RENDER UI ---
+
+        // 1. General
+        document.getElementById('ta-total-games').textContent = stats.totalGames;
+        document.getElementById('ta-winrate').textContent = fmtPct(pct(stats.wins, stats.totalGames)) + ' WR';
+        
+        // Sides
+        const blueWr = pct(stats.blue.wins, stats.blue.games);
+        document.getElementById('ta-blue-wr').textContent = `${stats.blue.games} игр (${fmtPct(blueWr)})`;
+        document.getElementById('ta-blue-bar').style.width = `${blueWr}%`;
+        
+        const redWr = pct(stats.red.wins, stats.red.games);
+        document.getElementById('ta-red-wr').textContent = `${stats.red.games} игр (${fmtPct(redWr)})`;
+        document.getElementById('ta-red-bar').style.width = `${redWr}%`;
+
+        // FP Stats
+        document.getElementById('ta-fp-games').textContent = `FP в ${stats.fp.games} играх`;
+        document.getElementById('ta-fp-wr').textContent = fmtPct(pct(stats.fp.wins, stats.fp.games));
+        
+        // FP Heroes List
+        const sortedFpHeroes = Array.from(stats.fpHeroes.entries()).sort((a,b) => b[1].games - a[1].games).slice(0, 3);
+        document.getElementById('ta-fp-top-heroes').innerHTML = sortedFpHeroes.map(([h, d]) => `
+             <div class="flex justify-between items-center text-xs">
+                 <div class="flex items-center gap-1"><img src="${heroImg(h)}" class="w-4 h-4 rounded"> ${h}</div>
+                 <span class="font-bold">${d.games} (${fmtPct(pct(d.wins, d.games))})</span>
+             </div>
+        `).join('') || '<div class="text-xs text-slate-400 italic">Нет данных</div>';
+
+
+        // Style
+        document.getElementById('ta-style-flex').textContent = flexCount + " героев";
+        // Calculate "Trio Priority" (Arbitrary metric: % of Phase 1 picks that are Mid+Roam+Jungle/Gold)
+        // Simplified: Just showing top Role in Phase 1
+        const rp = stats.rolePriorityPhase1;
+        const maxRole = Object.entries(rp).filter(k=>k[0]!=='total').sort((a,b)=>b[1]-a[1])[0];
+        document.getElementById('ta-style-trio').textContent = maxRole ? `${maxRole[0].toUpperCase()} (${fmtPct(pct(maxRole[1], rp.total))})` : '-';
+
+        // 2. Picks Table
+        const topPicks = Array.from(stats.heroes.entries())
+            .map(([h, d]) => ({ hero: h, picks: d.picks, wins: d.wins, wr: pct(d.wins, d.picks), p1: d.phase1, p2: d.phase2 }))
+            .sort((a, b) => b.picks - a.picks)
+            .slice(0, 7);
+        
+        document.getElementById('ta-top-picks-body').innerHTML = topPicks.map(p => `
+            <tr class="border-b border-slate-100">
+                <td class="px-2 py-2 flex items-center gap-2"><img src="${heroImg(p.hero)}" class="w-6 h-6 rounded-md object-cover"><span>${p.hero}</span></td>
+                <td class="px-2 py-2 text-center font-bold">${p.picks}</td>
+                <td class="px-2 py-2 text-center text-${p.wr >= 50 ? 'emerald' : 'rose'}-600">${fmtPct(p.wr)}</td>
+                <td class="px-2 py-2 text-center bg-slate-50">${p.p1} <span class="text-xs text-slate-400">(${fmtPct(pct(p.p1, p.picks))})</span></td>
+                <td class="px-2 py-2 text-center">${p.p2}</td>
+            </tr>
+        `).join('');
+
+        // 3. Role Priority
+        const rolesMap = { 'exp': 'EXP Lane', 'gold': 'Gold Lane', 'mid': 'Mid Lane', 'roam': 'Roamer', 'jungle': 'Jungler' };
+        const sortedRoles = Object.entries(rp).filter(x=>x[0]!=='total').sort((a,b)=>b[1]-a[1]);
+        document.getElementById('ta-role-priority').innerHTML = sortedRoles.map(([r, count]) => {
+            const perc = pct(count, rp.total);
+            return `
+                <div>
+                    <div class="flex justify-between text-xs mb-1"><span>${rolesMap[r]}</span><span>${count} (${fmtPct(perc)})</span></div>
+                    <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${perc}%"></div></div>
+                </div>
+            `;
+        }).join('');
+
+        // 4. Bans
+        const renderBans = (map, elId) => {
+            const sorted = Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            document.getElementById(elId).innerHTML = sorted.map(([h, c]) => `
+                <div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-lg">
+                    <div class="flex items-center gap-2"><img src="${heroImg(h)}" class="w-5 h-5 rounded"> ${h}</div>
+                    <span class="font-bold">${c}</span>
+                </div>
+            `).join('');
+        };
+        renderBans(stats.bansByThem, 'ta-bans-by-them');
+        renderBans(stats.bansAgainstThem, 'ta-bans-against-them');
+
+        // 5. Combinations
+        const renderCombo = (map, elId) => {
+            const sorted = Array.from(map.entries()).sort((a,b)=>b[1].games-a[1].games).slice(0,5);
+            document.getElementById(elId).innerHTML = sorted.map(([k, d]) => `
+                <div class="flex items-center justify-between text-xs p-2 border border-slate-100 rounded-lg">
+                    <div class="flex -space-x-2">
+                        ${d.heroes.map(h=>`<img src="${heroImg(h)}" class="w-6 h-6 rounded-full border-2 border-white">`).join('')}
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold">${d.games} игр</div>
+                        <div class="text-[10px] text-slate-500">${fmtPct(pct(d.wins, d.games))} WR</div>
+                    </div>
+                </div>
+            `).join('');
+        };
+        renderCombo(stats.combinations.duo, 'ta-duos');
+        renderCombo(stats.combinations.trio, 'ta-trios');
+
+        // Clear condition results
+        renderConditionalDraft();
+    }
+
+    function renderConditionalDraft() {
+        const bannedHero = normalizeHero(taConditionBanInput.value);
+        const teamName = analysisTeamSelect.value;
+        const resultEl = document.getElementById('ta-condition-results');
+
+        if (!bannedHero || !teamName) {
+            resultEl.innerHTML = '<span class="text-slate-400 text-xs">Выберите героя в бане, чтобы увидеть их реакцию.</span>';
+            return;
+        }
+
+        // 1. Scenario A: Banned Hero is IN THE BAN POOL (Played matches where X was banned)
+        let matches = getCurrentDataSet().filter(m => m.blue.team === teamName || m.red.team === teamName);
+        
+        const matchesWithBan = matches.filter(m => {
+            const allBans = [...m.blue.bans, ...m.red.bans].map(b => b.hero);
+            return allBans.includes(bannedHero);
+        });
+
+        // 2. Scenario B: Banned Hero is picked by OPPONENT (Played matches where Enemy took X)
+        const matchesVsHero = matches.filter(m => {
+            const isBlue = m.blue.team === teamName;
+            const enemyPicks = isBlue ? m.red.picks.map(p=>p.hero) : m.blue.picks.map(p=>p.hero);
+            return enemyPicks.includes(bannedHero);
+        });
+
+        // Count what they picked in those matches (Focus on Picks)
+        const aggregatePicks = (matchSet) => {
+             const counts = new Map(); // Hero -> {games, wins}
+             matchSet.forEach(m => {
+                 const isBlue = m.blue.team === teamName;
+                 const isWin = (isBlue && m.winner === 'blue') || (!isBlue && m.winner === 'red');
+                 const myPicks = isBlue ? m.blue.picks : m.red.picks;
+                 
+                 myPicks.forEach(p => {
+                     if (!counts.has(p.hero)) counts.set(p.hero, {games:0, wins:0});
+                     const c = counts.get(p.hero);
+                     c.games++;
+                     if(isWin) c.wins++;
+                 });
+             });
+             return counts;
+        };
+
+        const countsBan = aggregatePicks(matchesWithBan);
+        const countsVs = aggregatePicks(matchesVsHero);
+
+        // Get top heroes from either scenario to display
+        const allKeys = new Set([...countsBan.keys(), ...countsVs.keys()]);
+        const combinedStats = Array.from(allKeys).map(h => {
+             const b = countsBan.get(h) || {games:0, wins:0};
+             const v = countsVs.get(h) || {games:0, wins:0};
+             return { 
+                 hero: h, 
+                 banGames: b.games, banWin: b.wins, 
+                 vsGames: v.games, vsWin: v.wins,
+                 totalRelevance: b.games + v.games 
+             };
+        }).sort((a,b) => b.totalRelevance - a.totalRelevance).slice(0, 5);
+
+        if (combinedStats.length === 0) {
+            resultEl.innerHTML = `<span class="text-slate-500 text-xs">Матчей с участием или баном ${bannedHero} не найдено.</span>`;
+            return;
+        }
+
+        resultEl.innerHTML = `
+            <table class="w-full text-xs text-left">
+                <thead>
+                    <tr class="text-slate-500 border-b border-slate-200">
+                        <th class="py-1 font-normal">Герой</th>
+                        <th class="py-1 font-normal text-center">Когда ${bannedHero} в бане</th>
+                        <th class="py-1 font-normal text-center">Против ${bannedHero} (пик врага)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                ${combinedStats.map(row => {
+                    const banWR = row.banGames ? fmtPct(pct(row.banWin, row.banGames)) : '-';
+                    const vsWR = row.vsGames ? fmtPct(pct(row.vsWin, row.vsGames)) : '-';
+                    const banClass = row.banGames > 0 ? 'text-slate-900 font-bold' : 'text-slate-300';
+                    const vsClass = row.vsGames > 0 ? 'text-slate-900 font-bold' : 'text-slate-300';
+                    return `
+                    <tr class="border-b border-slate-100 last:border-0">
+                        <td class="py-2 flex items-center gap-2 font-medium text-slate-800">
+                            <img src="${heroImg(row.hero)}" class="w-5 h-5 rounded"> ${row.hero}
+                        </td>
+                        <td class="py-2 text-center bg-slate-50/50 ${banClass}">
+                            ${row.banGames ? `${row.banGames} (${banWR})` : '0'}
+                        </td>
+                        <td class="py-2 text-center bg-indigo-50/30 ${vsClass}">
+                            ${row.vsGames ? `${row.vsGames} (${vsWR})` : '0'}
+                        </td>
+                    </tr>
+                    `;
+                }).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+    // --- END: Team Analysis Functions ---
 
     function topN(map,n,{best=true,minGames=5}={}){ const arr=[...map.entries()].map(([name,o])=>({name, games:o.games, wins:o.wins, wr:o.games?o.wins*100/o.games:0})).filter(x=>x.games>=minGames).sort((a,b)=> best? (b.wr-a.wr||b.games-a.games):(a.wr-b.wr||b.games-a.games)); return arr.slice(0,n); }
     function calcTeamStatsForHero(hero, matches) { const teamStats = new Map(); function processTeam(team, isWin) { if (!teamStats.has(team)) { teamStats.set(team, { games: 0, wins: 0 }); } const stats = teamStats.get(team); stats.games++; if (isWin) { stats.wins++; } } matches.forEach(m => { if (m.blue.picks.some(p => p.hero === hero)) { processTeam(m.blue.team, m.winner === 'blue'); } if (m.red.picks.some(p => p.hero === hero)) { processTeam(m.red.team, m.winner === 'red'); } }); return Array.from(teamStats.entries()).map(([team, stats]) => ({ name: team, games: stats.games, wins: stats.wins, wr: pct(stats.wins, stats.games) })).sort((a, b) => b.games - a.games || b.wr - a.wr); }
@@ -511,6 +1021,9 @@
             rebuildFiltersAndStats(getCurrentDataSet()); 
             if (currentTab === 'matchups') {
                 renderMatchups();
+            }
+            if (currentTab === 'team-analysis') {
+                renderTeamAnalysis();
             }
         } 
     }
