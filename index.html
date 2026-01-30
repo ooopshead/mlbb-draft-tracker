@@ -28,25 +28,185 @@
     .sorted .sort-icon { opacity: 1; color: #0ea5e9; }
     .dark #draft-mode-toggle { background-color: #1e293b; }
     .dark .mode-btn.bg-white { background-color: #334155 !important; }
+    
+    /* Draft Helper Specifics */
+    .draft-slot { cursor: pointer; transition: all 0.2s; border: 2px solid transparent; position: relative; }
+    .draft-slot:hover { border-color: #94a3b8; }
+    .draft-slot.active-slot { border-color: #0ea5e9; background-color: rgba(14, 165, 233, 0.1); }
+    .draft-slot.filled { background-color: rgba(0,0,0,0.02); }
+    .dark .draft-slot.filled { background-color: rgba(255,255,255,0.02); }
+    .suggestion-card { transition: transform 0.1s; }
+    .suggestion-card:hover { transform: translateX(4px); }
+    .strength-bar-container { height: 8px; border-radius: 4px; background: #e2e8f0; overflow: hidden; display: flex; }
+    .strength-bar-blue { background: #3b82f6; transition: width 0.5s ease-out; }
+    .strength-bar-red { background: #ef4444; flex: 1; transition: width 0.5s ease-out; }
+    .stat-badge { font-size: 10px; padding: 1px 4px; border-radius: 4px; background: rgba(0,0,0,0.05); white-space: nowrap; }
+    .dark .stat-badge { background: rgba(255,255,255,0.1); }
+    .suggestion-reason { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+    
+    /* New Controls */
+    .slot-remove-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px; z-index: 10; opacity: 0; transition: opacity 0.2s; cursor: pointer; }
+    .draft-slot:hover .slot-remove-btn { opacity: 1; }
+    
+    /* Pick Row Styles */
+    .pick-row { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 12px; border: 1px solid transparent; transition: all 0.2s; }
+    .pick-row:hover { background-color: rgba(0,0,0,0.02); }
+    .pick-row.active-slot { background-color: rgba(14, 165, 233, 0.1); border-color: #0ea5e9; }
+    .role-select { padding: 4px 8px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background-color: white; outline: none; cursor: pointer; }
+    .dark .role-select { background-color: #1e293b; border-color: #475569; color: #e2e8f0; }
+
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
   <div id="auth-container" class="min-h-screen flex items-center justify-center hidden">
     <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg"><h1 class="text-2xl font-bold text-center mb-6">MLBB Draft Tracker</h1><div class="mb-4 flex justify-center border-b"><button id="show-login-btn" class="px-4 py-2 -mb-px border-b-2 border-slate-900 font-semibold">Вход</button><button id="show-signup-btn" class="px-4 py-2 text-slate-500">Регистрация</button></div><form id="loginForm"><div class="space-y-4"><input id="loginEmail" type="email" autocomplete="email" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Email" required /><input id="loginPassword" type="password" autocomplete="current-password" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Пароль" required /><button type="submit" class="w-full px-3 py-3 rounded-xl bg-slate-900 text-white font-semibold">Войти</button></div></form><form id="signupForm" class="hidden"><div class="space-y-4"><input id="signupEmail" type="email" autocomplete="email" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Email" required /><input id="signupPassword" type="password" autocomplete="new-password" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Придумайте пароль" required /><button type="submit" class="w-full px-3 py-3 rounded-xl bg-slate-900 text-white font-semibold">Зарегистрироваться</button></div><p class="text-xs text-slate-500 mt-4 text-center">После регистрации дождитесь, пока администратор предоставит вам доступ.</p></form></div>
   </div>
-  <div id="app-container" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div id="app-container" class="hidden max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <header class="flex items-center justify-between mb-4 flex-wrap gap-4"><div class="flex items-center gap-4"><h1 class="text-2xl font-bold tracking-tight">MLBB Draft Tracker</h1><div id="draft-mode-toggle" class="inline-flex rounded-lg bg-slate-200 p-1"><button data-mode="standard" class="mode-btn px-3 py-1 text-sm font-semibold rounded-md bg-white shadow">Standard</button><button data-mode="brave" class="mode-btn px-3 py-1 text-sm font-semibold rounded-md">Brave Draft (MCC)</button></div></div><div class="flex items-center gap-4 flex-wrap"><div id="admin-tools" class="hidden items-center gap-2"><button id="exportBtn" class="px-3 py-2 text-sm rounded-xl bg-slate-200">Экспорт JSON</button><label class="px-3 py-2 text-sm rounded-xl bg-slate-200 cursor-pointer">Импорт JSON<input id="importInput" type="file" accept="application/json" class="hidden" /></label><button id="deleteAllBtn" class="px-3 py-2 text-sm rounded-xl bg-rose-600 text-white">Удалить всё</button></div><div id="userInfo" class="text-sm flex items-center gap-3"><span id="userEmail" class="text-slate-600"></span><button id="logoutBtn" class="px-3 py-2 rounded-xl bg-slate-200">Выйти</button></div><input id="imgBaseInput" class="hidden sm:block w-64 px-3 py-2 rounded-xl bg-slate-100" placeholder="Папка портретов: ./portraits/" /><button id="themeToggle" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300" title="Тёмная/светлая тема">🌙</button></div></header>
     <nav class="inline-flex rounded-2xl bg-white shadow ring-1 ring-slate-200 overflow-hidden mb-4 overflow-x-auto">
       <button data-tab="stats" class="tab-btn px-4 py-2 text-sm font-medium bg-slate-900 text-white whitespace-nowrap">Статистика</button>
       <button data-tab="matches" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 whitespace-nowrap">Матчи</button>
       <button data-tab="matchups" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 whitespace-nowrap">Матчапы</button>
       <button data-tab="team-analysis" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 whitespace-nowrap">Анализ Команды</button>
+      <button data-tab="draft-helper" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 whitespace-nowrap text-indigo-600 font-bold">Draft Helper (AI)</button>
       <button id="inputTabBtn" data-tab="input" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 hidden whitespace-nowrap">Ввод матча</button>
     </nav>
     
     <!-- ВВОД МАТЧА -->
     <section id="tab-input" class="hidden fade-in"><form id="matchForm" class="space-y-6"><div class="grid grid-cols-1 md:grid-cols-5 gap-4"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Лига</label><input name="league" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="MPL / MDL…" required /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Патч</label><input name="patch" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="напр. 1.8.80" required /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Дата</label><input type="date" name="date" class="w-full px-3 py-2 rounded-xl bg-slate-100" /></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Тип карты</label><select name="terrain" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Не указан</option><option value="стены">Стены</option><option value="облака">Облака</option><option value="река">Река</option><option value="кусты">Кусты</option></select></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Победитель</label><div class="flex items-center gap-4 mt-2"><label class="inline-flex items-center gap-2"><input type="radio" name="winner" value="blue"/> Синяя</label><label class="inline-flex items-center gap-2"><input type="radio" name="winner" value="red"/> Красная</label></div></div></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><label class="block text-sm font-medium mb-1">Режим драфта</label><div class="flex items-center gap-4 mt-2"><label class="inline-flex items-center gap-2"><input type="radio" name="draft_mode" value="standard" checked/> Standard</label><label class="inline-flex items-center gap-2"><input type="radio" name="draft_mode" value="brave"/> Brave Draft</label></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><h2 class="font-semibold mb-2">Синяя команда</h2><input name="blueTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100 mb-3" placeholder="Blue Team" required /><div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><div><div class="text-sm font-medium mb-1">Баны (5)</div><div id="blueBans" class="space-y-2"></div></div><div><div class="text-sm font-medium mb-1">Пики (5)</div><div id="bluePicks" class="space-y-2"></div></div></div></div><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200"><h2 class="font-semibold mb-2">Красная команда</h2><input name="redTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100 mb-3" placeholder="Red Team" required /><div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><div><div class="text-sm font-medium mb-1">Баны (5)</div><div id="redBans" class="space-y-2"></div></div><div><div class="text-sm font-medium mb-1">Пики (5)</div><div id="redPicks" class="space-y-2"></div></div></div></div></div><div class="flex items-center gap-3"><button id="saveMatchBtn" class="px-4 py-2 rounded-xl bg-emerald-600 text-white" type="submit">Сохранить матч</button><button id="resetForm" class="px-4 py-2 rounded-xl bg-slate-200" type="button">Очистить форму</button><button id="cancelEditBtn" class="px-4 py-2 rounded-xl bg-amber-500 text-white hidden" type="button">Отмена</button></div></form></section>
     
+    <!-- DRAFT HELPER -->
+    <section id="tab-draft-helper" class="hidden fade-in">
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        
+        <!-- Левая колонка: Управление и Доска -->
+        <div class="xl:col-span-8 space-y-4">
+          <!-- Сила Драфта Бар -->
+          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+             <div class="flex justify-between items-center text-xs font-bold uppercase mb-1">
+                <span class="text-blue-600">Шанс Синих: <span id="dh-win-prob-blue">50%</span></span>
+                <span class="text-slate-400">Сила драфта (Win Prob)</span>
+                <span class="text-red-600">Шанс Красных: <span id="dh-win-prob-red">50%</span></span>
+             </div>
+             <div class="strength-bar-container">
+                <div id="dh-strength-bar-fill" class="strength-bar-blue" style="width: 50%;"></div>
+                <div class="strength-bar-red"></div>
+             </div>
+          </div>
+
+          <!-- Панель управления -->
+          <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div>
+                <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Ваша сторона</label>
+                <div class="flex bg-slate-100 rounded-xl p-1">
+                  <button id="dh-side-blue" class="flex-1 py-1.5 text-sm font-medium rounded-lg bg-white shadow text-blue-700">Синяя (FP)</button>
+                  <button id="dh-side-red" class="flex-1 py-1.5 text-sm font-medium rounded-lg text-slate-500">Красная</button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Патч</label>
+                <select id="dh-filter-patch" class="w-full px-3 py-2 rounded-xl bg-slate-100 font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500"></select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Противник</label>
+                <select id="dh-enemy-team" class="w-full px-3 py-2 rounded-xl bg-slate-100 font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500"></select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Действия</label>
+                <div class="flex gap-2">
+                  <button id="dh-reset" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-xl text-sm font-medium">Сброс</button>
+                  <div class="combo flex-1">
+                     <input id="dh-picker-input" class="w-full px-3 py-2 rounded-xl bg-slate-900 text-white placeholder-slate-400" placeholder="Поиск..." disabled />
+                     <div class="combo-list hidden text-slate-900"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Доска Драфта -->
+          <div class="bg-white p-6 rounded-2xl shadow ring-1 ring-slate-200">
+             <div class="grid grid-cols-2 gap-8">
+                <!-- BLUE TEAM -->
+                <div>
+                   <h3 class="font-bold text-blue-600 mb-3 flex items-center gap-2">
+                     <span class="w-2 h-2 rounded-full bg-blue-600"></span> Синяя команда
+                   </h3>
+                   <div class="space-y-4">
+                      <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-bold mb-1 ml-1">Баны</div>
+                        <div class="grid grid-cols-5 gap-2" id="dh-blue-bans"></div>
+                      </div>
+                      <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-bold mb-1 ml-1">Пики</div>
+                        <div class="space-y-2" id="dh-blue-picks"></div>
+                      </div>
+                   </div>
+                </div>
+                <!-- RED TEAM -->
+                <div>
+                   <h3 class="font-bold text-red-600 mb-3 flex items-center gap-2 justify-end">
+                     Красная команда <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                   </h3>
+                   <div class="space-y-4">
+                      <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-bold mb-1 mr-1 text-right">Баны</div>
+                        <div class="grid grid-cols-5 gap-2" id="dh-red-bans"></div>
+                      </div>
+                      <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-bold mb-1 mr-1 text-right">Пики</div>
+                        <div class="space-y-2" id="dh-red-picks"></div>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+        </div>
+
+        <!-- Правая колонка: Подсказки -->
+        <div class="xl:col-span-4 space-y-4">
+          <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden">
+             <div class="relative z-10">
+               <h3 class="font-bold text-lg mb-1">Советник Драфта (AI)</h3>
+               <p id="dh-status-text" class="text-xs text-slate-400">Выберите слот для начала...</p>
+             </div>
+             <div class="absolute right-0 top-0 opacity-10 text-9xl leading-none">?</div>
+          </div>
+
+          <div id="dh-suggestions-container" class="space-y-3 hidden">
+             <!-- Блок: Рекомендуемые баны -->
+             <div id="dh-suggest-bans" class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 hidden">
+                <h4 class="text-xs font-bold text-rose-600 uppercase mb-3">Рекомендуемые баны</h4>
+                <div id="dh-list-bans" class="space-y-2"></div>
+             </div>
+
+             <!-- Блок: Враг часто берет -->
+             <div id="dh-enemy-comfort" class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 hidden">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-3">Комфорт врага / Ожидаемый пик</h4>
+                <div id="dh-list-enemy-comfort" class="space-y-2"></div>
+             </div>
+
+             <!-- Блок: Рекомендуемые пики -->
+             <div id="dh-suggest-picks" class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 hidden">
+                <h4 class="text-xs font-bold text-emerald-600 uppercase mb-3">Рекомендуемые пики</h4>
+                <div id="dh-list-picks" class="space-y-2"></div>
+             </div>
+
+             <!-- Блок: Опасные контрпики -->
+             <div id="dh-enemy-counters" class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 hidden">
+                <h4 class="text-xs font-bold text-amber-600 uppercase mb-3">Осторожно! Контрпики:</h4>
+                <div id="dh-list-counters" class="space-y-2"></div>
+             </div>
+          </div>
+          
+          <div id="dh-empty-state" class="text-center py-10 text-slate-400 text-sm">
+             Нажмите на любой слот на доске слева, чтобы получить рекомендации с учетом синергии, контрпиков и меты выбранного патча.
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ОБЩАЯ СТАТИСТИКА -->
     <section id="tab-stats" class="hidden fade-in"><div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200 mb-4"><div class="grid grid-cols-1 md:grid-cols-7 gap-3"><div><label class="block text-xs font-medium mb-1">Лига</label><select id="filterLeague" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Патч</label><select id="filterPatch" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Команда</label><select id="filterTeam" class="w-full px-3 py-2 rounded-xl bg-slate-100"></select></div><div><label class="block text-xs font-medium mb-1">Сторона</label><select id="filterSide" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Все</option><option value="blue">Синяя</option><option value="red">Красная</option></select></div><div><label class="block text-xs font-medium mb-1">Роль</label><select id="filterRole" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Все роли</option><option value="exp">EXP</option><option value="jungle">Jungle</option><option value="mid">Mid</option><option value="roam">Roam</option><option value="gold">Gold</option></select></div><div><label class="block text-xs font-medium mb-1">Карта</label><select id="filterTerrain" class="w-full px-3 py-2 rounded-xl bg-slate-100"><option value="">Все карты</option><option value="стены">Стены</option><option value="облака">Облака</option><option value="река">Река</option><option value="кусты">Кусты</option></select></div><div><label class="block text-xs font-medium mb-1">Поиск героя</label><input id="searchHero" placeholder="Введите имя" class="w-full px-3 py-2 rounded-xl bg-slate-100" /></div></div></div><div class="bg-white rounded-2xl shadow ring-1 ring-slate-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="bg-slate-100 text-slate-600"><tr><th class="px-4 py-2 text-left sortable" data-sort="hero"><span>Герой</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable sorted" data-sort="presence"><span>Присутствие</span><span class="sort-icon">▼</span></th><th class="px-4 py-2 text-right sortable" data-sort="picks"><span>Игр</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable" data-sort="winrate"><span>Винрейт</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable" data-sort="wins"><span>Победы</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable" data-sort="losses"><span>Поражения</span><span class="sort-icon"></span></th><th class="px-4 py-2 text-right sortable" data-sort="bans"><span>Баны</span><span class="sort-icon"></span></th></tr></thead><tbody id="statsBody" class="divide-y divide-slate-100"></tbody></table></div><div class="p-3 text-xs text-slate-500">Нажмите на заголовок для сортировки. Нажмите на героя для подробностей.</div></div></section>
     
@@ -284,6 +444,21 @@
     let sortState = { key: 'presence', direction: 'desc' };
     let editingMatchId = null;
     
+    // Draft Helper State
+    // picks теперь объекты { hero: string, role: string|null }
+    let draftState = {
+       mySide: 'blue', 
+       enemyTeam: '',
+       patch: '',
+       activeSlot: null,
+       blue: { bans: Array(5).fill(''), picks: Array(5).fill(null) },
+       red: { bans: Array(5).fill(''), picks: Array(5).fill(null) }
+    };
+    // Helper to get hero string safely
+    const getHero = (val) => val ? (typeof val === 'string' ? val : val.hero) : '';
+    const getRole = (val) => val ? (typeof val === 'object' ? val.role : null) : null;
+
+
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
     const loginForm = document.getElementById('loginForm');
@@ -341,6 +516,32 @@
     const teamAnalysisContent = document.getElementById('teamAnalysisContent');
     const teamAnalysisPlaceholder = document.getElementById('teamAnalysisPlaceholder');
     const taConditionBanInput = document.getElementById('ta-condition-ban');
+
+    // Draft Helper Elements
+    const dhSideBlue = document.getElementById('dh-side-blue');
+    const dhSideRed = document.getElementById('dh-side-red');
+    const dhFilterPatch = document.getElementById('dh-filter-patch');
+    const dhEnemyTeam = document.getElementById('dh-enemy-team');
+    const dhReset = document.getElementById('dh-reset');
+    const dhPickerInput = document.getElementById('dh-picker-input');
+    const dhBlueBans = document.getElementById('dh-blue-bans');
+    const dhBluePicks = document.getElementById('dh-blue-picks');
+    const dhRedBans = document.getElementById('dh-red-bans');
+    const dhRedPicks = document.getElementById('dh-red-picks');
+    const dhStatusText = document.getElementById('dh-status-text');
+    const dhSuggestionsContainer = document.getElementById('dh-suggestions-container');
+    const dhEmptyState = document.getElementById('dh-empty-state');
+    const dhSuggestBans = document.getElementById('dh-suggest-bans');
+    const dhEnemyComfort = document.getElementById('dh-enemy-comfort');
+    const dhSuggestPicks = document.getElementById('dh-suggest-picks');
+    const dhEnemyCounters = document.getElementById('dh-enemy-counters');
+    const dhListBans = document.getElementById('dh-list-bans');
+    const dhListEnemyComfort = document.getElementById('dh-list-enemy-comfort');
+    const dhListPicks = document.getElementById('dh-list-picks');
+    const dhListCounters = document.getElementById('dh-list-counters');
+    const dhStrengthBarFill = document.getElementById('dh-strength-bar-fill');
+    const dhWinProbBlue = document.getElementById('dh-win-prob-blue');
+    const dhWinProbRed = document.getElementById('dh-win-prob-red');
 
     const HEROES = ["Aamon","Akai","Aldous","Alice","Alpha","Alucard","Angela","Argus","Arlott","Atlas","Aulus","Aurora","Badang","Balmond","Bane","Barats","Baxia","Beatrix","Belerick","Benedetta","Brody","Bruno","Carmilla","Cecilion","Chang'e","Chip","Chou","Cici","Claude","Clint","Cyclops","Diggie","Dyrroth","Edith","Esmeralda","Estes","Eudora","Fanny","Faramis","Floryn","Franco","Fredrinn","Freya","Gatotkaca","Gloo","Gord","Granger","Grock","Guinevere","Gusion","Hanabi","Hanzo","Harith","Harley","Hayabusa","Helcurt","Hilda","Hylos","Irithel","Ixia","Jawhead","Johnson","Joy","Julian","Kadita","Kagura","Kaja","Kalea","Karina","Karrie","Khaleed","Khufra","Kimmy","Lancelot","Lapu-Lapu","Layla","Leomord","Lesley","Ling","Lolita","Lukas","Lunox","Luo Yi","Lylia","Martis","Masha","Mathilda","Melissa","Minotaur","Minsitthar","Miya","Moskov","Nana","Natalia","Natan","Nolan","Novaria","Obsidia","Odette","Paquito","Pharsa","Phoveus","Popol and Kupa","Rafaela","Roger","Ruby","Saber","Selena","Silvanna","Sora","Sun","Suyou","Terizla","Thamuz","Tigreal","Uranus","Vale","Valentina","Valir","Vexana","Wanwan","X.Borg","Xavier","Yi Sun-shin","Yin","Yu Zhong","Yve","Zetian","Zhask","Zhuxin","Zilong"];
     const LS_IMG = 'mlbb_portraits_base_v1';
@@ -499,6 +700,61 @@
         attachCombobox(taConditionBanInput.parentElement, taConditionBanInput);
         taConditionBanInput.addEventListener('change', renderConditionalDraft);
 
+        // Draft Helper Listeners
+        dhSideBlue.addEventListener('click', () => {
+            draftState.mySide = 'blue';
+            dhSideBlue.classList.add('bg-white', 'shadow', 'text-blue-700'); dhSideBlue.classList.remove('text-slate-500');
+            dhSideRed.classList.remove('bg-white', 'shadow', 'text-blue-700'); dhSideRed.classList.add('text-slate-500');
+            updateDraftSuggestions();
+        });
+        dhSideRed.addEventListener('click', () => {
+            draftState.mySide = 'red';
+            dhSideRed.classList.add('bg-white', 'shadow', 'text-blue-700'); dhSideRed.classList.remove('text-slate-500');
+            dhSideBlue.classList.remove('bg-white', 'shadow', 'text-blue-700'); dhSideBlue.classList.add('text-slate-500');
+            updateDraftSuggestions();
+        });
+        dhEnemyTeam.addEventListener('change', (e) => {
+            draftState.enemyTeam = e.target.value;
+            updateDraftSuggestions();
+            evaluateDraftStrength();
+        });
+        dhFilterPatch.addEventListener('change', (e) => {
+            draftState.patch = e.target.value;
+            updateDraftSuggestions();
+            evaluateDraftStrength();
+        });
+        dhReset.addEventListener('click', () => {
+             draftState.blue.bans = Array(5).fill('');
+             draftState.blue.picks = Array(5).fill(null);
+             draftState.red.bans = Array(5).fill('');
+             draftState.red.picks = Array(5).fill(null);
+             draftState.activeSlot = null;
+             renderDraftHelperBoard();
+             dhEmptyState.classList.remove('hidden');
+             dhSuggestionsContainer.classList.add('hidden');
+             dhPickerInput.value = '';
+             dhPickerInput.disabled = true;
+             dhStatusText.textContent = "Выберите слот для начала...";
+             evaluateDraftStrength();
+        });
+        attachCombobox(dhPickerInput.parentElement, dhPickerInput);
+        dhPickerInput.addEventListener('change', (e) => {
+             if (draftState.activeSlot && e.target.value) {
+                 const {team, type, index} = draftState.activeSlot;
+                 const val = e.target.value;
+                 if (type === 'ban') {
+                    draftState[team].bans[index] = val;
+                 } else {
+                    // Pick default: no role initially
+                    draftState[team].picks[index] = { hero: val, role: null };
+                 }
+                 e.target.value = '';
+                 renderDraftHelperBoard();
+                 updateDraftSuggestions();
+                 evaluateDraftStrength();
+             }
+        });
+
     })();
 
     supabase.auth.onAuthStateChange((event, session) => { handleSessionChange(session, event); });
@@ -519,14 +775,20 @@
         stats: document.getElementById('tab-stats'), 
         matches: document.getElementById('tab-matches'), 
         matchups: document.getElementById('tab-matchups'),
-        'team-analysis': document.getElementById('tab-team-analysis')
+        'team-analysis': document.getElementById('tab-team-analysis'),
+        'draft-helper': document.getElementById('tab-draft-helper')
     };
     const tabBtns = document.querySelectorAll('.tab-btn');
     tabBtns.forEach(btn => { 
         btn.addEventListener('click', () => { 
             if (btn.id === 'inputTabBtn' && currentUserRole !== 'admin') return; 
-            tabBtns.forEach(b => b.classList.remove('bg-slate-900', 'text-white')); 
-            btn.classList.add('bg-slate-900', 'text-white'); 
+            tabBtns.forEach(b => {
+                 b.classList.remove('bg-slate-900', 'text-white');
+                 if(b.dataset.tab === 'draft-helper') b.classList.add('text-indigo-600');
+            }); 
+            btn.classList.add('bg-slate-900', 'text-white');
+            if (btn.dataset.tab === 'draft-helper') btn.classList.remove('text-indigo-600');
+
             const key = btn.dataset.tab; 
             Object.entries(tabs).forEach(([k, el]) => el.classList.toggle('hidden', k !== key)); 
             
@@ -539,6 +801,12 @@
                  setOptions(analysisPatch, f.patches);
                  analysisTeamSelect.innerHTML = '<option value="">-- Выберите команду --</option>' + f.teams.filter(t=>t !== 'Все').map(v=>`<option value='${v}'>${v}</option>`).join('');
                  renderTeamAnalysis();
+            }
+            if (key === 'draft-helper') {
+                 const f = collectFilters(getCurrentDataSet());
+                 dhEnemyTeam.innerHTML = '<option value="">-- Выберите противника --</option>' + f.teams.filter(t=>t !== 'Все').map(v=>`<option value='${v}'>${v}</option>`).join('');
+                 dhFilterPatch.innerHTML = '<option value="">-- Все патчи --</option>' + f.patches.filter(t=>t !== 'Все').map(v=>`<option value='${v}'>${v}</option>`).join('');
+                 renderDraftHelperBoard();
             }
         }); 
     });
@@ -573,441 +841,481 @@
     function rebuildFiltersAndStats(matches){ const f=collectFilters(matches); const allHeroesSorted = ['Все', ...HEROES.sort()]; setOptions(filterLeague,f.leagues); setOptions(filterPatch,f.patches); setOptions(filterTeam,f.teams); setOptions(filterMatchesTeam, f.teams); setOptions(filterMatchesLeague, f.leagues); setOptions(filterMatchesHero, allHeroesSorted); renderStats(); renderFilteredMatches(); }
     
     // --- START: Matchup Functions ---
-    function rebuildMatchupFilters(matches) {
-        const { leagues, patches } = collectFilters(matches);
-        setOptions(filterMatchupLeague, leagues);
-        setOptions(filterMatchupPatch, patches);
-    }
-    
-    function calculateMatchupStats(heroA, heroB, filters) {
-        let matches = applyFilters(getCurrentDataSet(), filters);
-        const results = {
-            synergy: { games: 0, wins: 0 },
-            counter: { games: 0, wins: 0 },
-            relevantMatches: [],
-            teammatesForA: new Map(),
-            teammatesForB: new Map()
-        };
-
-        const inc = (map, key, win) => {
-            if (!map.has(key)) map.set(key, { games: 0, wins: 0 });
-            const o = map.get(key);
-            o.games++;
-            if (win) o.wins++;
-        };
-
-        matches.forEach(m => {
-            const bluePicks = new Set(m.blue.picks.map(p => p.hero));
-            const redPicks = new Set(m.red.picks.map(p => p.hero));
-
-            const blueHasA = bluePicks.has(heroA), blueHasB = bluePicks.has(heroB);
-            const redHasA = redPicks.has(heroA), redHasB = redPicks.has(heroB);
-            
-            // Synergy check
-            if ((blueHasA && blueHasB) || (redHasA && redHasB)) {
-                results.synergy.games++;
-                const isWin = (blueHasA && m.winner === 'blue') || (redHasA && m.winner === 'red');
-                if (isWin) results.synergy.wins++;
-                results.relevantMatches.push({ ...m, matchupType: 'synergy' });
-            } 
-            // Counter check
-            else if ((blueHasA && redHasB) || (redHasA && blueHasB)) {
-                results.counter.games++;
-                const isWinForA = (blueHasA && m.winner === 'blue') || (redHasA && m.winner === 'red');
-                if (isWinForA) results.counter.wins++;
-                results.relevantMatches.push({ ...m, matchupType: 'counter' });
-
-                if (blueHasA) { // A is Blue, B is Red
-                    m.blue.picks.forEach(p => { if(p.hero !== heroA) inc(results.teammatesForA, p.hero, m.winner === 'blue'); });
-                    m.red.picks.forEach(p => { if(p.hero !== heroB) inc(results.teammatesForB, p.hero, m.winner === 'red'); });
-                } else { // A is Red, B is Blue
-                    m.red.picks.forEach(p => { if(p.hero !== heroA) inc(results.teammatesForA, p.hero, m.winner === 'red'); });
-                    m.blue.picks.forEach(p => { if(p.hero !== heroB) inc(results.teammatesForB, p.hero, m.winner === 'blue'); });
-                }
-            }
-        });
-        return results;
-    }
-
-    function renderMatchups() {
-        rebuildMatchupFilters(getCurrentDataSet());
-        const heroA = normalizeHero(matchupHeroAInput.value);
-        const heroB = normalizeHero(matchupHeroBInput.value);
-
-        if (!heroA || !heroB || heroA === heroB) {
-            matchupResultsContainer.classList.add('hidden');
-            matchupPlaceholder.classList.remove('hidden');
-            if (heroA && heroB && heroA === heroB) {
-                matchupPlaceholder.textContent = 'Выберите двух разных героев.';
-            } else {
-                matchupPlaceholder.textContent = 'Выберите двух героев для сравнения.';
-            }
-            return;
-        }
-
-        const filters = {
-            league: filterMatchupLeague.value || '',
-            patch: filterMatchupPatch.value || '',
-        };
-
-        const stats = calculateMatchupStats(heroA, heroB, filters);
-        
-        const synWR = fmtPct(pct(stats.synergy.wins, stats.synergy.games));
-        matchupSynergyResultEl.innerHTML = `
-            <div class='flex justify-between'><span>Игр вместе:</span> <span class='font-medium'>${stats.synergy.games}</span></div>
-            <div class='flex justify-between'><span>Побед:</span> <span class='font-medium text-emerald-600'>${stats.synergy.wins}</span></div>
-            <div class='flex justify-between'><span>Винрейт:</span> <span class='font-medium'>${synWR}</span></div>
-        `;
-
-        const ctrWR = fmtPct(pct(stats.counter.wins, stats.counter.games));
-        matchupCounterResultEl.innerHTML = `
-            <div class='flex justify-between'><span>Игр против:</span> <span class='font-medium'>${stats.counter.games}</span></div>
-            <div class='flex justify-between'><span>Побед для ${heroA}:</span> <span class='font-medium text-emerald-600'>${stats.counter.wins}</span></div>
-            <div class='flex justify-between'><span>Винрейт для ${heroA}:</span> <span class='font-medium'>${ctrWR}</span></div>
-        `;
-
-        matchupBestTeammatesForA_title.textContent = `Топ-5 союзников для ${heroA} против ${heroB}`;
-        matchupBestTeammatesForB_title.textContent = `Топ-5 союзников для ${heroB} против ${heroA}`;
-
-        const bestForA = topN(stats.teammatesForA, 5, { best: true, minGames: 5 });
-        const bestForB = topN(stats.teammatesForB, 5, { best: true, minGames: 5 });
-        
-        matchupBestTeammatesForAEl.innerHTML = renderKV(bestForA);
-        matchupBestTeammatesForBEl.innerHTML = renderKV(bestForB);
-        
-        const matchFilterType = matchupMatchFilter.value;
-        let matchesToShow = stats.relevantMatches;
-        if (matchFilterType === 'synergy') {
-            matchesToShow = stats.relevantMatches.filter(m => m.matchupType === 'synergy');
-        } else if (matchFilterType === 'counter') {
-            matchesToShow = stats.relevantMatches.filter(m => m.matchupType === 'counter');
-        }
-        refreshMatchesList(matchesToShow, matchupMatchesListEl);
-
-        matchupPlaceholder.classList.add('hidden');
-        matchupResultsContainer.classList.remove('hidden');
-    }
+    function rebuildMatchupFilters(matches) { const { leagues, patches } = collectFilters(matches); setOptions(filterMatchupLeague, leagues); setOptions(filterMatchupPatch, patches); }
+    function calculateMatchupStats(heroA, heroB, filters) { let matches = applyFilters(getCurrentDataSet(), filters); const results = { synergy: { games: 0, wins: 0 }, counter: { games: 0, wins: 0 }, relevantMatches: [], teammatesForA: new Map(), teammatesForB: new Map() }; const inc = (map, key, win) => { if (!map.has(key)) map.set(key, { games: 0, wins: 0 }); const o = map.get(key); o.games++; if (win) o.wins++; }; matches.forEach(m => { const bluePicks = new Set(m.blue.picks.map(p => p.hero)); const redPicks = new Set(m.red.picks.map(p => p.hero)); const blueHasA = bluePicks.has(heroA), blueHasB = bluePicks.has(heroB); const redHasA = redPicks.has(heroA), redHasB = redPicks.has(heroB); if ((blueHasA && blueHasB) || (redHasA && redHasB)) { results.synergy.games++; const isWin = (blueHasA && m.winner === 'blue') || (redHasA && m.winner === 'red'); if (isWin) results.synergy.wins++; results.relevantMatches.push({ ...m, matchupType: 'synergy' }); } else if ((blueHasA && redHasB) || (redHasA && blueHasB)) { results.counter.games++; const isWinForA = (blueHasA && m.winner === 'blue') || (redHasA && m.winner === 'red'); if (isWinForA) results.counter.wins++; results.relevantMatches.push({ ...m, matchupType: 'counter' }); if (blueHasA) { m.blue.picks.forEach(p => { if(p.hero !== heroA) inc(results.teammatesForA, p.hero, m.winner === 'blue'); }); m.red.picks.forEach(p => { if(p.hero !== heroB) inc(results.teammatesForB, p.hero, m.winner === 'red'); }); } else { m.red.picks.forEach(p => { if(p.hero !== heroA) inc(results.teammatesForA, p.hero, m.winner === 'red'); }); m.blue.picks.forEach(p => { if(p.hero !== heroB) inc(results.teammatesForB, p.hero, m.winner === 'blue'); }); } } }); return results; }
+    function renderMatchups() { rebuildMatchupFilters(getCurrentDataSet()); const heroA = normalizeHero(matchupHeroAInput.value); const heroB = normalizeHero(matchupHeroBInput.value); if (!heroA || !heroB || heroA === heroB) { matchupResultsContainer.classList.add('hidden'); matchupPlaceholder.classList.remove('hidden'); if (heroA && heroB && heroA === heroB) { matchupPlaceholder.textContent = 'Выберите двух разных героев.'; } else { matchupPlaceholder.textContent = 'Выберите двух героев для сравнения.'; } return; } const filters = { league: filterMatchupLeague.value || '', patch: filterMatchupPatch.value || '', }; const stats = calculateMatchupStats(heroA, heroB, filters); const synWR = fmtPct(pct(stats.synergy.wins, stats.synergy.games)); matchupSynergyResultEl.innerHTML = `<div class='flex justify-between'><span>Игр вместе:</span> <span class='font-medium'>${stats.synergy.games}</span></div><div class='flex justify-between'><span>Побед:</span> <span class='font-medium text-emerald-600'>${stats.synergy.wins}</span></div><div class='flex justify-between'><span>Винрейт:</span> <span class='font-medium'>${synWR}</span></div>`; const ctrWR = fmtPct(pct(stats.counter.wins, stats.counter.games)); matchupCounterResultEl.innerHTML = `<div class='flex justify-between'><span>Игр против:</span> <span class='font-medium'>${stats.counter.games}</span></div><div class='flex justify-between'><span>Побед для ${heroA}:</span> <span class='font-medium text-emerald-600'>${stats.counter.wins}</span></div><div class='flex justify-between'><span>Винрейт для ${heroA}:</span> <span class='font-medium'>${ctrWR}</span></div>`; matchupBestTeammatesForA_title.textContent = `Топ-5 союзников для ${heroA} против ${heroB}`; matchupBestTeammatesForB_title.textContent = `Топ-5 союзников для ${heroB} против ${heroA}`; const bestForA = topN(stats.teammatesForA, 5, { best: true, minGames: 5 }); const bestForB = topN(stats.teammatesForB, 5, { best: true, minGames: 5 }); matchupBestTeammatesForAEl.innerHTML = renderKV(bestForA); matchupBestTeammatesForBEl.innerHTML = renderKV(bestForB); const matchFilterType = matchupMatchFilter.value; let matchesToShow = stats.relevantMatches; if (matchFilterType === 'synergy') { matchesToShow = stats.relevantMatches.filter(m => m.matchupType === 'synergy'); } else if (matchFilterType === 'counter') { matchesToShow = stats.relevantMatches.filter(m => m.matchupType === 'counter'); } refreshMatchesList(matchesToShow, matchupMatchesListEl); matchupPlaceholder.classList.add('hidden'); matchupResultsContainer.classList.remove('hidden'); }
     // --- END: Matchup Functions ---
     
     // --- START: Team Analysis Functions ---
-    function renderTeamAnalysis() {
-        const teamName = analysisTeamSelect.value;
-        const league = analysisLeague.value;
-        const patch = analysisPatch.value;
-
-        if (!teamName) {
-            teamAnalysisContent.classList.add('hidden');
-            teamAnalysisPlaceholder.classList.remove('hidden');
-            return;
-        }
-
-        teamAnalysisPlaceholder.classList.add('hidden');
-        teamAnalysisContent.classList.remove('hidden');
-
-        // 1. Filter Matches
-        let matches = getCurrentDataSet().filter(m => m.blue.team === teamName || m.red.team === teamName);
-        if (league) matches = matches.filter(m => m.league === league);
-        if (patch) matches = matches.filter(m => m.patch === patch);
-
-        // 2. Aggregate Stats
-        const stats = {
-            totalGames: matches.length,
-            wins: 0,
-            blue: { games: 0, wins: 0 },
-            red: { games: 0, wins: 0 },
-            fp: { games: 0, wins: 0 }, // First Pick (Blue side)
-            fpHeroes: new Map(), // Specific heroes taken on FP (Blue P1)
-            heroes: new Map(), // Picks
-            bansByThem: new Map(),
-            bansAgainstThem: new Map(),
-            rolePriorityPhase1: { exp:0, jungle:0, mid:0, roam:0, gold:0, total:0 },
-            combinations: { duo: new Map(), trio: new Map() },
-            flexPicks: 0 // Heroes played in >=2 roles
-        };
-
-        matches.forEach(m => {
-            const isBlue = m.blue.team === teamName;
-            const mySide = isBlue ? m.blue : m.red;
-            const enemySide = isBlue ? m.red : m.blue;
-            const isWin = (isBlue && m.winner === 'blue') || (!isBlue && m.winner === 'red');
-
-            if (isWin) stats.wins++;
-            
-            // Side Stats & FP
-            if (isBlue) { 
-                stats.blue.games++; if(isWin) stats.blue.wins++; 
-                stats.fp.games++; if(isWin) stats.fp.wins++; 
-                
-                // Track who was taken first (Blue P1)
-                const fpHero = mySide.picks[0]?.hero;
-                if (fpHero) {
-                    if (!stats.fpHeroes.has(fpHero)) stats.fpHeroes.set(fpHero, {games:0, wins:0});
-                    const fh = stats.fpHeroes.get(fpHero);
-                    fh.games++; if(isWin) fh.wins++;
-                }
-            } else { 
-                stats.red.games++; if(isWin) stats.red.wins++; 
-            }
-
-            // Process Picks
-            const myHeroes = [];
-            mySide.picks.forEach((p, idx) => {
-                myHeroes.push(p.hero);
-                if (!stats.heroes.has(p.hero)) stats.heroes.set(p.hero, { picks: 0, wins: 0, phase1: 0, phase2: 0, roles: new Set() });
-                const h = stats.heroes.get(p.hero);
-                h.picks++;
-                if (isWin) h.wins++;
-                if (p.role) h.roles.add(p.role);
-
-                // Draft Phase Logic (Phase 1: Indexes 0,1,2 | Phase 2: Indexes 3,4)
-                if (idx < 3) {
-                    h.phase1++;
-                    if (p.role) stats.rolePriorityPhase1[p.role]++;
-                    stats.rolePriorityPhase1.total++;
-                } else {
-                    h.phase2++;
-                }
-            });
-
-            // Process Bans (By Them)
-            mySide.bans.forEach(b => {
-                const k = b.hero;
-                if(!stats.bansByThem.has(k)) stats.bansByThem.set(k, 0);
-                stats.bansByThem.set(k, stats.bansByThem.get(k) + 1);
-            });
-
-            // Process Bans (Against Them)
-            enemySide.bans.forEach(b => {
-                const k = b.hero;
-                if(!stats.bansAgainstThem.has(k)) stats.bansAgainstThem.set(k, 0);
-                stats.bansAgainstThem.set(k, stats.bansAgainstThem.get(k) + 1);
-            });
-
-            // Process Combinations (DUO)
-            const uniqueHeroes = [...new Set(myHeroes)].sort(); // Ensure uniqueness and sorting
-            
-            for(let i=0; i<uniqueHeroes.length; i++) {
-                for(let j=i+1; j<uniqueHeroes.length; j++) {
-                    const key = [uniqueHeroes[i], uniqueHeroes[j]].join('+'); // Already sorted
-                    if(!stats.combinations.duo.has(key)) stats.combinations.duo.set(key, {games:0, wins:0, heroes:[uniqueHeroes[i], uniqueHeroes[j]]});
-                    const c = stats.combinations.duo.get(key); c.games++; if(isWin) c.wins++;
-                }
-            }
-            // Process Combinations (TRIO)
-            for(let i=0; i<uniqueHeroes.length; i++) {
-                for(let j=i+1; j<uniqueHeroes.length; j++) {
-                     for(let k=j+1; k<uniqueHeroes.length; k++) {
-                        const key = [uniqueHeroes[i], uniqueHeroes[j], uniqueHeroes[k]].join('+'); // Already sorted
-                        if(!stats.combinations.trio.has(key)) stats.combinations.trio.set(key, {games:0, wins:0, heroes:[uniqueHeroes[i], uniqueHeroes[j], uniqueHeroes[k]]});
-                        const c = stats.combinations.trio.get(key); c.games++; if(isWin) c.wins++;
-                     }
-                }
-            }
-        });
-
-        // Count flex picks
-        let flexCount = 0;
-        stats.heroes.forEach(h => { if(h.roles.size >= 2) flexCount++; });
-
-        // --- RENDER UI ---
-
-        // 1. General
-        document.getElementById('ta-total-games').textContent = stats.totalGames;
-        document.getElementById('ta-winrate').textContent = fmtPct(pct(stats.wins, stats.totalGames)) + ' WR';
-        
-        // Sides
-        const blueWr = pct(stats.blue.wins, stats.blue.games);
-        document.getElementById('ta-blue-wr').textContent = `${stats.blue.games} игр (${fmtPct(blueWr)})`;
-        document.getElementById('ta-blue-bar').style.width = `${blueWr}%`;
-        
-        const redWr = pct(stats.red.wins, stats.red.games);
-        document.getElementById('ta-red-wr').textContent = `${stats.red.games} игр (${fmtPct(redWr)})`;
-        document.getElementById('ta-red-bar').style.width = `${redWr}%`;
-
-        // FP Stats
-        document.getElementById('ta-fp-games').textContent = `FP в ${stats.fp.games} играх`;
-        document.getElementById('ta-fp-wr').textContent = fmtPct(pct(stats.fp.wins, stats.fp.games));
-        
-        // FP Heroes List
-        const sortedFpHeroes = Array.from(stats.fpHeroes.entries()).sort((a,b) => b[1].games - a[1].games).slice(0, 3);
-        document.getElementById('ta-fp-top-heroes').innerHTML = sortedFpHeroes.map(([h, d]) => `
-             <div class="flex justify-between items-center text-xs">
-                 <div class="flex items-center gap-1"><img src="${heroImg(h)}" class="w-4 h-4 rounded"> ${h}</div>
-                 <span class="font-bold">${d.games} (${fmtPct(pct(d.wins, d.games))})</span>
-             </div>
-        `).join('') || '<div class="text-xs text-slate-400 italic">Нет данных</div>';
-
-
-        // Style
-        document.getElementById('ta-style-flex').textContent = flexCount + " героев";
-        // Calculate "Trio Priority" (Arbitrary metric: % of Phase 1 picks that are Mid+Roam+Jungle/Gold)
-        // Simplified: Just showing top Role in Phase 1
-        const rp = stats.rolePriorityPhase1;
-        const maxRole = Object.entries(rp).filter(k=>k[0]!=='total').sort((a,b)=>b[1]-a[1])[0];
-        document.getElementById('ta-style-trio').textContent = maxRole ? `${maxRole[0].toUpperCase()} (${fmtPct(pct(maxRole[1], rp.total))})` : '-';
-
-        // 2. Picks Table
-        const topPicks = Array.from(stats.heroes.entries())
-            .map(([h, d]) => ({ hero: h, picks: d.picks, wins: d.wins, wr: pct(d.wins, d.picks), p1: d.phase1, p2: d.phase2 }))
-            .sort((a, b) => b.picks - a.picks)
-            .slice(0, 7);
-        
-        document.getElementById('ta-top-picks-body').innerHTML = topPicks.map(p => `
-            <tr class="border-b border-slate-100">
-                <td class="px-2 py-2 flex items-center gap-2"><img src="${heroImg(p.hero)}" class="w-6 h-6 rounded-md object-cover"><span>${p.hero}</span></td>
-                <td class="px-2 py-2 text-center font-bold">${p.picks}</td>
-                <td class="px-2 py-2 text-center text-${p.wr >= 50 ? 'emerald' : 'rose'}-600">${fmtPct(p.wr)}</td>
-                <td class="px-2 py-2 text-center bg-slate-50">${p.p1} <span class="text-xs text-slate-400">(${fmtPct(pct(p.p1, p.picks))})</span></td>
-                <td class="px-2 py-2 text-center">${p.p2}</td>
-            </tr>
-        `).join('');
-
-        // 3. Role Priority
-        const rolesMap = { 'exp': 'EXP Lane', 'gold': 'Gold Lane', 'mid': 'Mid Lane', 'roam': 'Roamer', 'jungle': 'Jungler' };
-        const sortedRoles = Object.entries(rp).filter(x=>x[0]!=='total').sort((a,b)=>b[1]-a[1]);
-        document.getElementById('ta-role-priority').innerHTML = sortedRoles.map(([r, count]) => {
-            const perc = pct(count, rp.total);
-            return `
-                <div>
-                    <div class="flex justify-between text-xs mb-1"><span>${rolesMap[r]}</span><span>${count} (${fmtPct(perc)})</span></div>
-                    <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${perc}%"></div></div>
-                </div>
-            `;
-        }).join('');
-
-        // 4. Bans
-        const renderBans = (map, elId) => {
-            const sorted = Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5);
-            document.getElementById(elId).innerHTML = sorted.map(([h, c]) => `
-                <div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-lg">
-                    <div class="flex items-center gap-2"><img src="${heroImg(h)}" class="w-5 h-5 rounded"> ${h}</div>
-                    <span class="font-bold">${c}</span>
-                </div>
-            `).join('');
-        };
-        renderBans(stats.bansByThem, 'ta-bans-by-them');
-        renderBans(stats.bansAgainstThem, 'ta-bans-against-them');
-
-        // 5. Combinations
-        const renderCombo = (map, elId) => {
-            const sorted = Array.from(map.entries()).sort((a,b)=>b[1].games-a[1].games).slice(0,5);
-            document.getElementById(elId).innerHTML = sorted.map(([k, d]) => `
-                <div class="flex items-center justify-between text-xs p-2 border border-slate-100 rounded-lg">
-                    <div class="flex -space-x-2">
-                        ${d.heroes.map(h=>`<img src="${heroImg(h)}" class="w-6 h-6 rounded-full border-2 border-white">`).join('')}
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold">${d.games} игр</div>
-                        <div class="text-[10px] text-slate-500">${fmtPct(pct(d.wins, d.games))} WR</div>
-                    </div>
-                </div>
-            `).join('');
-        };
-        renderCombo(stats.combinations.duo, 'ta-duos');
-        renderCombo(stats.combinations.trio, 'ta-trios');
-
-        // Clear condition results
-        renderConditionalDraft();
-    }
-
-    function renderConditionalDraft() {
-        const bannedHero = normalizeHero(taConditionBanInput.value);
-        const teamName = analysisTeamSelect.value;
-        const resultEl = document.getElementById('ta-condition-results');
-
-        if (!bannedHero || !teamName) {
-            resultEl.innerHTML = '<span class="text-slate-400 text-xs">Выберите героя в бане, чтобы увидеть их реакцию.</span>';
-            return;
-        }
-
-        // 1. Scenario A: Banned Hero is IN THE BAN POOL (Played matches where X was banned)
-        let matches = getCurrentDataSet().filter(m => m.blue.team === teamName || m.red.team === teamName);
-        
-        const matchesWithBan = matches.filter(m => {
-            const allBans = [...m.blue.bans, ...m.red.bans].map(b => b.hero);
-            return allBans.includes(bannedHero);
-        });
-
-        // 2. Scenario B: Banned Hero is picked by OPPONENT (Played matches where Enemy took X)
-        const matchesVsHero = matches.filter(m => {
-            const isBlue = m.blue.team === teamName;
-            const enemyPicks = isBlue ? m.red.picks.map(p=>p.hero) : m.blue.picks.map(p=>p.hero);
-            return enemyPicks.includes(bannedHero);
-        });
-
-        // Count what they picked in those matches (Focus on Picks)
-        const aggregatePicks = (matchSet) => {
-             const counts = new Map(); // Hero -> {games, wins}
-             matchSet.forEach(m => {
-                 const isBlue = m.blue.team === teamName;
-                 const isWin = (isBlue && m.winner === 'blue') || (!isBlue && m.winner === 'red');
-                 const myPicks = isBlue ? m.blue.picks : m.red.picks;
-                 
-                 myPicks.forEach(p => {
-                     if (!counts.has(p.hero)) counts.set(p.hero, {games:0, wins:0});
-                     const c = counts.get(p.hero);
-                     c.games++;
-                     if(isWin) c.wins++;
-                 });
-             });
-             return counts;
-        };
-
-        const countsBan = aggregatePicks(matchesWithBan);
-        const countsVs = aggregatePicks(matchesVsHero);
-
-        // Get top heroes from either scenario to display
-        const allKeys = new Set([...countsBan.keys(), ...countsVs.keys()]);
-        const combinedStats = Array.from(allKeys).map(h => {
-             const b = countsBan.get(h) || {games:0, wins:0};
-             const v = countsVs.get(h) || {games:0, wins:0};
-             return { 
-                 hero: h, 
-                 banGames: b.games, banWin: b.wins, 
-                 vsGames: v.games, vsWin: v.wins,
-                 totalRelevance: b.games + v.games 
-             };
-        }).sort((a,b) => b.totalRelevance - a.totalRelevance).slice(0, 5);
-
-        if (combinedStats.length === 0) {
-            resultEl.innerHTML = `<span class="text-slate-500 text-xs">Матчей с участием или баном ${bannedHero} не найдено.</span>`;
-            return;
-        }
-
-        resultEl.innerHTML = `
-            <table class="w-full text-xs text-left">
-                <thead>
-                    <tr class="text-slate-500 border-b border-slate-200">
-                        <th class="py-1 font-normal">Герой</th>
-                        <th class="py-1 font-normal text-center">Когда ${bannedHero} в бане</th>
-                        <th class="py-1 font-normal text-center">Против ${bannedHero} (пик врага)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                ${combinedStats.map(row => {
-                    const banWR = row.banGames ? fmtPct(pct(row.banWin, row.banGames)) : '-';
-                    const vsWR = row.vsGames ? fmtPct(pct(row.vsWin, row.vsGames)) : '-';
-                    const banClass = row.banGames > 0 ? 'text-slate-900 font-bold' : 'text-slate-300';
-                    const vsClass = row.vsGames > 0 ? 'text-slate-900 font-bold' : 'text-slate-300';
-                    return `
-                    <tr class="border-b border-slate-100 last:border-0">
-                        <td class="py-2 flex items-center gap-2 font-medium text-slate-800">
-                            <img src="${heroImg(row.hero)}" class="w-5 h-5 rounded"> ${row.hero}
-                        </td>
-                        <td class="py-2 text-center bg-slate-50/50 ${banClass}">
-                            ${row.banGames ? `${row.banGames} (${banWR})` : '0'}
-                        </td>
-                        <td class="py-2 text-center bg-indigo-50/30 ${vsClass}">
-                            ${row.vsGames ? `${row.vsGames} (${vsWR})` : '0'}
-                        </td>
-                    </tr>
-                    `;
-                }).join('')}
-                </tbody>
-            </table>
-        `;
-    }
+    function renderTeamAnalysis() { const teamName = analysisTeamSelect.value; const league = analysisLeague.value; const patch = analysisPatch.value; if (!teamName) { teamAnalysisContent.classList.add('hidden'); teamAnalysisPlaceholder.classList.remove('hidden'); return; } teamAnalysisPlaceholder.classList.add('hidden'); teamAnalysisContent.classList.remove('hidden'); let matches = getCurrentDataSet().filter(m => m.blue.team === teamName || m.red.team === teamName); if (league) matches = matches.filter(m => m.league === league); if (patch) matches = matches.filter(m => m.patch === patch); const stats = { totalGames: matches.length, wins: 0, blue: { games: 0, wins: 0 }, red: { games: 0, wins: 0 }, fp: { games: 0, wins: 0 }, fpHeroes: new Map(), heroes: new Map(), bansByThem: new Map(), bansAgainstThem: new Map(), rolePriorityPhase1: { exp:0, jungle:0, mid:0, roam:0, gold:0, total:0 }, combinations: { duo: new Map(), trio: new Map() }, flexPicks: 0 }; matches.forEach(m => { const isBlue = m.blue.team === teamName; const mySide = isBlue ? m.blue : m.red; const enemySide = isBlue ? m.red : m.blue; const isWin = (isBlue && m.winner === 'blue') || (!isBlue && m.winner === 'red'); if (isWin) stats.wins++; if (isBlue) { stats.blue.games++; if(isWin) stats.blue.wins++; stats.fp.games++; if(isWin) stats.fp.wins++; const fpHero = mySide.picks[0]?.hero; if (fpHero) { if (!stats.fpHeroes.has(fpHero)) stats.fpHeroes.set(fpHero, {games:0, wins:0}); const fh = stats.fpHeroes.get(fpHero); fh.games++; if(isWin) fh.wins++; } } else { stats.red.games++; if(isWin) stats.red.wins++; } const myHeroes = []; mySide.picks.forEach((p, idx) => { myHeroes.push(p.hero); if (!stats.heroes.has(p.hero)) stats.heroes.set(p.hero, { picks: 0, wins: 0, phase1: 0, phase2: 0, roles: new Set() }); const h = stats.heroes.get(p.hero); h.picks++; if (isWin) h.wins++; if (p.role) h.roles.add(p.role); if (idx < 3) { h.phase1++; if (p.role) stats.rolePriorityPhase1[p.role]++; stats.rolePriorityPhase1.total++; } else { h.phase2++; } }); mySide.bans.forEach(b => { const k = b.hero; if(!stats.bansByThem.has(k)) stats.bansByThem.set(k, 0); stats.bansByThem.set(k, stats.bansByThem.get(k) + 1); }); enemySide.bans.forEach(b => { const k = b.hero; if(!stats.bansAgainstThem.has(k)) stats.bansAgainstThem.set(k, 0); stats.bansAgainstThem.set(k, stats.bansAgainstThem.get(k) + 1); }); const uniqueHeroes = [...new Set(myHeroes)].sort(); for(let i=0; i<uniqueHeroes.length; i++) { for(let j=i+1; j<uniqueHeroes.length; j++) { const key = [uniqueHeroes[i], uniqueHeroes[j]].join('+'); if(!stats.combinations.duo.has(key)) stats.combinations.duo.set(key, {games:0, wins:0, heroes:[uniqueHeroes[i], uniqueHeroes[j]]}); const c = stats.combinations.duo.get(key); c.games++; if(isWin) c.wins++; } } for(let i=0; i<uniqueHeroes.length; i++) { for(let j=i+1; j<uniqueHeroes.length; j++) { for(let k=j+1; k<uniqueHeroes.length; k++) { const key = [uniqueHeroes[i], uniqueHeroes[j], uniqueHeroes[k]].join('+'); if(!stats.combinations.trio.has(key)) stats.combinations.trio.set(key, {games:0, wins:0, heroes:[uniqueHeroes[i], uniqueHeroes[j], uniqueHeroes[k]]}); const c = stats.combinations.trio.get(key); c.games++; if(isWin) c.wins++; } } } }); let flexCount = 0; stats.heroes.forEach(h => { if(h.roles.size >= 2) flexCount++; }); document.getElementById('ta-total-games').textContent = stats.totalGames; document.getElementById('ta-winrate').textContent = fmtPct(pct(stats.wins, stats.totalGames)) + ' WR'; const blueWr = pct(stats.blue.wins, stats.blue.games); document.getElementById('ta-blue-wr').textContent = `${stats.blue.games} игр (${fmtPct(blueWr)})`; document.getElementById('ta-blue-bar').style.width = `${blueWr}%`; const redWr = pct(stats.red.wins, stats.red.games); document.getElementById('ta-red-wr').textContent = `${stats.red.games} игр (${fmtPct(redWr)})`; document.getElementById('ta-red-bar').style.width = `${redWr}%`; document.getElementById('ta-fp-games').textContent = `FP в ${stats.fp.games} играх`; document.getElementById('ta-fp-wr').textContent = fmtPct(pct(stats.fp.wins, stats.fp.games)); const sortedFpHeroes = Array.from(stats.fpHeroes.entries()).sort((a,b) => b[1].games - a[1].games).slice(0, 3); document.getElementById('ta-fp-top-heroes').innerHTML = sortedFpHeroes.map(([h, d]) => `<div class="flex justify-between items-center text-xs"><div class="flex items-center gap-1"><img src="${heroImg(h)}" class="w-4 h-4 rounded"> ${h}</div><span class="font-bold">${d.games} (${fmtPct(pct(d.wins, d.games))})</span></div>`).join('') || '<div class="text-xs text-slate-400 italic">Нет данных</div>'; document.getElementById('ta-style-flex').textContent = flexCount + " героев"; const rp = stats.rolePriorityPhase1; const maxRole = Object.entries(rp).filter(k=>k[0]!=='total').sort((a,b)=>b[1]-a[1])[0]; document.getElementById('ta-style-trio').textContent = maxRole ? `${maxRole[0].toUpperCase()} (${fmtPct(pct(maxRole[1], rp.total))})` : '-'; const topPicks = Array.from(stats.heroes.entries()).map(([h, d]) => ({ hero: h, picks: d.picks, wins: d.wins, wr: pct(d.wins, d.picks), p1: d.phase1, p2: d.phase2 })).sort((a, b) => b.picks - a.picks).slice(0, 7); document.getElementById('ta-top-picks-body').innerHTML = topPicks.map(p => `<tr class="border-b border-slate-100"><td class="px-2 py-2 flex items-center gap-2"><img src="${heroImg(p.hero)}" class="w-6 h-6 rounded-md object-cover"><span>${p.hero}</span></td><td class="px-2 py-2 text-center font-bold">${p.picks}</td><td class="px-2 py-2 text-center text-${p.wr >= 50 ? 'emerald' : 'rose'}-600">${fmtPct(p.wr)}</td><td class="px-2 py-2 text-center bg-slate-50">${p.p1} <span class="text-xs text-slate-400">(${fmtPct(pct(p.p1, p.picks))})</span></td><td class="px-2 py-2 text-center">${p.p2}</td></tr>`).join(''); const rolesMap = { 'exp': 'EXP Lane', 'gold': 'Gold Lane', 'mid': 'Mid Lane', 'roam': 'Roamer', 'jungle': 'Jungler' }; const sortedRoles = Object.entries(rp).filter(x=>x[0]!=='total').sort((a,b)=>b[1]-a[1]); document.getElementById('ta-role-priority').innerHTML = sortedRoles.map(([r, count]) => { const perc = pct(count, rp.total); return `<div><div class="flex justify-between text-xs mb-1"><span>${rolesMap[r]}</span><span>${count} (${fmtPct(perc)})</span></div><div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${perc}%"></div></div></div>`; }).join(''); const renderBans = (map, elId) => { const sorted = Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById(elId).innerHTML = sorted.map(([h, c]) => `<div class="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-lg"><div class="flex items-center gap-2"><img src="${heroImg(h)}" class="w-5 h-5 rounded"> ${h}</div><span class="font-bold">${c}</span></div>`).join(''); }; renderBans(stats.bansByThem, 'ta-bans-by-them'); renderBans(stats.bansAgainstThem, 'ta-bans-against-them'); const renderCombo = (map, elId) => { const sorted = Array.from(map.entries()).sort((a,b)=>b[1].games-a[1].games).slice(0,5); document.getElementById(elId).innerHTML = sorted.map(([k, d]) => `<div class="flex items-center justify-between text-xs p-2 border border-slate-100 rounded-lg"><div class="flex -space-x-2">${d.heroes.map(h=>`<img src="${heroImg(h)}" class="w-6 h-6 rounded-full border-2 border-white">`).join('')}</div><div class="text-right"><div class="font-bold">${d.games} игр</div><div class="text-[10px] text-slate-500">${fmtPct(pct(d.wins, d.games))} WR</div></div></div>`).join(''); }; renderCombo(stats.combinations.duo, 'ta-duos'); renderCombo(stats.combinations.trio, 'ta-trios'); renderConditionalDraft(); }
+    function renderConditionalDraft() { const bannedHero = normalizeHero(taConditionBanInput.value); const teamName = analysisTeamSelect.value; const resultEl = document.getElementById('ta-condition-results'); if (!bannedHero || !teamName) { resultEl.innerHTML = '<span class="text-slate-400 text-xs">Выберите героя в бане, чтобы увидеть их реакцию.</span>'; return; } let matches = getCurrentDataSet().filter(m => m.blue.team === teamName || m.red.team === teamName); const matchesWithBan = matches.filter(m => { const allBans = [...m.blue.bans, ...m.red.bans].map(b => b.hero); return allBans.includes(bannedHero); }); const matchesVsHero = matches.filter(m => { const isBlue = m.blue.team === teamName; const enemyPicks = isBlue ? m.red.picks.map(p=>p.hero) : m.blue.picks.map(p=>p.hero); return enemyPicks.includes(bannedHero); }); const aggregatePicks = (matchSet) => { const counts = new Map(); matchSet.forEach(m => { const isBlue = m.blue.team === teamName; const isWin = (isBlue && m.winner === 'blue') || (!isBlue && m.winner === 'red'); const myPicks = isBlue ? m.blue.picks : m.red.picks; myPicks.forEach(p => { if (!counts.has(p.hero)) counts.set(p.hero, {games:0, wins:0}); const c = counts.get(p.hero); c.games++; if(isWin) c.wins++; }); }); return counts; }; const countsBan = aggregatePicks(matchesWithBan); const countsVs = aggregatePicks(matchesVsHero); const allKeys = new Set([...countsBan.keys(), ...countsVs.keys()]); const combinedStats = Array.from(allKeys).map(h => { const b = countsBan.get(h) || {games:0, wins:0}; const v = countsVs.get(h) || {games:0, wins:0}; return { hero: h, banGames: b.games, banWin: b.wins, vsGames: v.games, vsWin: v.wins, totalRelevance: b.games + v.games }; }).sort((a,b) => b.totalRelevance - a.totalRelevance).slice(0, 5); if (combinedStats.length === 0) { resultEl.innerHTML = `<span class="text-slate-500 text-xs">Матчей с участием или баном ${bannedHero} не найдено.</span>`; return; } resultEl.innerHTML = `<table class="w-full text-xs text-left"><thead><tr class="text-slate-500 border-b border-slate-200"><th class="py-1 font-normal">Герой</th><th class="py-1 font-normal text-center">Когда ${bannedHero} в бане</th><th class="py-1 font-normal text-center">Против ${bannedHero} (пик врага)</th></tr></thead><tbody>${combinedStats.map(row => { const banWR = row.banGames ? fmtPct(pct(row.banWin, row.banGames)) : '-'; const vsWR = row.vsGames ? fmtPct(pct(row.vsWin, row.vsGames)) : '-'; const banClass = row.banGames > 0 ? 'text-slate-900 font-bold' : 'text-slate-300'; const vsClass = row.vsGames > 0 ? 'text-slate-900 font-bold' : 'text-slate-300'; return `<tr class="border-b border-slate-100 last:border-0"><td class="py-2 flex items-center gap-2 font-medium text-slate-800"><img src="${heroImg(row.hero)}" class="w-5 h-5 rounded"> ${row.hero}</td><td class="py-2 text-center bg-slate-50/50 ${banClass}">${row.banGames ? `${row.banGames} (${banWR})` : '0'}</td><td class="py-2 text-center bg-indigo-50/30 ${vsClass}">${row.vsGames ? `${row.vsGames} (${vsWR})` : '0'}</td></tr>`; }).join('')}</tbody></table>`; }
     // --- END: Team Analysis Functions ---
+
+    // --- START: Draft Helper Logic ---
+    const MIN_GAMES_THRESHOLD = 5; 
+    
+    function renderDraftHelperBoard() {
+        // --- RENDER BANS (Horizontal, Squares) ---
+        const createBanSlot = (team, index, val) => {
+            const isFilled = !!val;
+            const isActive = draftState.activeSlot && draftState.activeSlot.team === team && draftState.activeSlot.type === 'ban' && draftState.activeSlot.index === index;
+            return `
+              <div class="draft-slot aspect-square rounded-xl flex items-center justify-center bg-slate-50 border-2 border-slate-100 overflow-hidden relative ${isActive ? 'active-slot ring-2 ring-sky-400' : ''} ${isFilled ? 'filled' : ''}"
+                 onclick="window.selectDraftSlot('${team}', 'ban', ${index})">
+                  ${isFilled ? 
+                    `<img src="${heroImg(val)}" class="w-full h-full object-cover">
+                     <span class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] text-center truncate px-1">${val}</span>
+                     <div class="slot-remove-btn" onclick="window.clearDraftSlot('${team}', 'ban', ${index}, event)">✕</div>` 
+                    : `<span class="text-slate-300 font-bold text-xs">${index + 1}</span>`}
+              </div>`;
+        };
+
+        // --- RENDER PICKS (Vertical, Rows with Select) ---
+        const createPickRow = (team, index, val) => {
+            const isFilled = !!val;
+            const heroName = getHero(val);
+            const role = getRole(val) || '';
+            const isActive = draftState.activeSlot && draftState.activeSlot.team === team && draftState.activeSlot.type === 'pick' && draftState.activeSlot.index === index;
+            
+            return `
+              <div class="pick-row ${isActive ? 'active-slot' : ''}" onclick="window.selectDraftSlot('${team}', 'pick', ${index})">
+                 <!-- Image / Placeholder -->
+                 <div class="relative w-12 h-12 shrink-0 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
+                    ${isFilled ? `<img src="${heroImg(heroName)}" class="w-full h-full object-cover">` : `<span class="text-slate-300 font-bold text-xs">${index + 1}</span>`}
+                 </div>
+                 
+                 <!-- Content -->
+                 <div class="flex-1 min-w-0 flex flex-col justify-center h-full px-1">
+                    <div class="font-bold text-sm truncate ${!isFilled ? 'text-slate-400' : ''}">${isFilled ? heroName : 'Выберите героя'}</div>
+                 </div>
+
+                 <!-- Role Select & Remove -->
+                 ${isFilled ? `
+                   <select class="role-select" onclick="event.stopPropagation()" onchange="window.updateRole('${team}', ${index}, this.value)">
+                      <option value="" ${role===''?'selected':''}>Роль?</option>
+                      <option value="exp" ${role==='exp'?'selected':''}>EXP</option>
+                      <option value="jungle" ${role==='jungle'?'selected':''}>Jungle</option>
+                      <option value="mid" ${role==='mid'?'selected':''}>Mid</option>
+                      <option value="roam" ${role==='roam'?'selected':''}>Roam</option>
+                      <option value="gold" ${role==='gold'?'selected':''}>Gold</option>
+                   </select>
+                   <div class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-rose-100 text-rose-500 cursor-pointer" onclick="window.clearDraftSlot('${team}', 'pick', ${index}, event)">✕</div>
+                 ` : ''}
+              </div>`;
+        };
+
+        dhBlueBans.innerHTML = draftState.blue.bans.map((h, i) => createBanSlot('blue', i, h)).join('');
+        dhRedBans.innerHTML = draftState.red.bans.map((h, i) => createBanSlot('red', i, h)).join('');
+
+        dhBluePicks.innerHTML = draftState.blue.picks.map((h, i) => createPickRow('blue', i, h)).join('');
+        dhRedPicks.innerHTML = draftState.red.picks.map((h, i) => createPickRow('red', i, h)).join('');
+        
+        evaluateDraftStrength();
+    }
+
+    window.selectDraftSlot = (team, type, index) => {
+        draftState.activeSlot = { team, type, index };
+        renderDraftHelperBoard();
+        dhPickerInput.disabled = false;
+        dhPickerInput.value = '';
+        dhPickerInput.focus();
+        updateDraftSuggestions();
+    };
+
+    window.clearDraftSlot = (team, type, index, e) => {
+        e.stopPropagation();
+        if (type === 'ban') {
+            draftState[team].bans[index] = '';
+        } else {
+            draftState[team].picks[index] = null;
+        }
+        renderDraftHelperBoard();
+        updateDraftSuggestions();
+        evaluateDraftStrength();
+    }
+
+    window.updateRole = (team, index, newRole) => {
+        if (draftState[team].picks[index]) {
+            draftState[team].picks[index].role = newRole;
+            // Re-render is tricky because it kills focus, but necessary to update state visually if needed
+            // But usually select holds its own state visually, so we just update data and suggestions
+            updateDraftSuggestions(); 
+        }
+    }
+
+    function getFilteredMatchesForHelper() {
+        let matches = getCurrentDataSet();
+        if (draftState.patch) matches = matches.filter(m => m.patch === draftState.patch);
+        return matches;
+    }
+
+    // Расширенная функция оценки героя
+    // targetSide = 'blue' or 'red' (For whom are we calculating score?)
+    function calculateHeroScore(hero, context, targetSide) {
+        const { globalStats, enemyTeamStats, allyPicks, enemyPicks, filledRoles } = context;
+        let score = 0;
+        let reasons = []; 
+
+        const gStat = globalStats.find(s => s.hero === hero);
+        if (!gStat || gStat.presence < 3) return { score: -9999, reasons: [], stats: null };
+
+        // --- FILTER BY ROLE (STRICT) ---
+        // If the candidate hero is primarily played in a role that is already FILLED, skip them.
+        let dominantRole = null;
+        if (gStat.roles) {
+            let maxCount = 0;
+            // Determine primary role from global stats
+            Object.entries(gStat.roles).forEach(([r, stats]) => {
+                if (stats.picks > maxCount) { maxCount = stats.picks; dominantRole = r; }
+            });
+            // If dominant role matches a filled role, huge penalty
+            if (dominantRole && filledRoles.has(dominantRole)) {
+                score -= 5000; 
+            }
+        }
+
+        // --- BASE SCORE ---
+        const pickBanRate = gStat.presence;
+        const wr = gStat.wins / gStat.picks;
+        if (gStat.picks < MIN_GAMES_THRESHOLD) {
+            score += (wr - 0.5) * 10; 
+        } else {
+            score += (wr - 0.5) * 100;
+            score += (pickBanRate * 0.5);
+        }
+        const baseStatStr = `Global: ${gStat.picks} игр, ${fmtPct(wr*100)} WR`;
+
+        // --- 1. SYNERGY (С союзниками) ---
+        if (allyPicks.length > 0) {
+            allyPicks.forEach(ally => {
+                const pairStat = calculateMatchupStats(hero, ally, {patch: draftState.patch}).synergy;
+                if (pairStat.games >= 3) {
+                    const pairWr = pairStat.wins / pairStat.games;
+                    if (pairWr > 0.52) {
+                        score += (pairWr - 0.5) * 150;
+                        reasons.push(`<span class="text-emerald-600">Синергия с ${ally}:</span> ${pairStat.games} игр, ${fmtPct(pairWr*100)} WR`);
+                    }
+                }
+            });
+        }
+
+        // --- 2. COUNTER (Против врагов) ---
+        if (enemyPicks.length > 0) {
+            enemyPicks.forEach(enemy => {
+                const pairStat = calculateMatchupStats(hero, enemy, {patch: draftState.patch}).counter;
+                if (pairStat.games >= 3) {
+                    const counterWr = pairStat.wins / pairStat.games;
+                    if (counterWr > 0.53) {
+                        score += (counterWr - 0.5) * 120;
+                        reasons.push(`<span class="text-blue-600">Контрит ${enemy}:</span> ${pairStat.games} игр, ${fmtPct(counterWr*100)} WR`);
+                    } else if (counterWr < 0.45) {
+                        score -= 200;
+                        reasons.push(`<span class="text-rose-500">Слаб против ${enemy}:</span> ${fmtPct(counterWr*100)} WR`);
+                    }
+                }
+            });
+        }
+        
+        // --- 3. DENIAL / BLOCK (Забрать комбо у врага) ---
+        // Только если это ход Нашей команды, и мы смотрим на пики врага
+        // Если 'hero' создает супер-комбо с 'enemyPicks', нам выгодно его забрать (denial)
+        if (enemyPicks.length > 0) {
+             enemyPicks.forEach(enemy => {
+                 const pairStat = calculateMatchupStats(hero, enemy, {patch: draftState.patch}).synergy;
+                 // Если бы они были вместе, какой WR?
+                 if (pairStat.games >= 3) {
+                     const pairWr = pairStat.wins / pairStat.games;
+                     if (pairWr > 0.55) {
+                         // Это сильная связка для врага. Перехватим!
+                         score += (pairWr - 0.5) * 100;
+                         reasons.push(`<span class="text-amber-600">Denial (Ломаем комбо ${enemy}):</span> ${pairStat.games} игр, ${fmtPct(pairWr*100)} WR`);
+                     }
+                 }
+             });
+        }
+
+        // --- 4. ENEMY COMFORT ---
+        if (enemyTeamStats) {
+            const eStat = enemyTeamStats.find(s => s.hero === hero);
+            if (eStat) {
+                const enemyHeroWr = eStat.wins / eStat.picks;
+                if (eStat.picks >= 3 && enemyHeroWr > 0.55) {
+                    // Если мы пикаем, это Denial мейна
+                    score += 50; 
+                    reasons.push(`<span class="text-amber-600">Мейн врага (Pick to Deny):</span> ${eStat.picks} игр, ${fmtPct(enemyHeroWr*100)} WR`);
+                }
+            }
+        }
+
+        return { score, reasons, globalStat: baseStatStr, rawWr: wr, picks: gStat.picks };
+    }
+
+    function calculateBanScore(hero, context) {
+        const { globalStats, enemyTeamStats, allyPicks, enemyPicks } = context;
+        let score = 0;
+        let reasons = [];
+
+        // 1. Мейн врага
+        if (enemyTeamStats) {
+            const eStat = enemyTeamStats.find(s => s.hero === hero);
+            if (eStat && eStat.picks >= 3) {
+                const wr = eStat.wins / eStat.picks;
+                score += eStat.picks * wr * 100;
+                if (wr > 0.5) reasons.push(`<span class="text-rose-600">Мейн врага:</span> ${eStat.picks} игр, ${fmtPct(wr*100)} WR`);
+            }
+        }
+
+        // 2. Ломаем комбо врагу
+        if (enemyPicks.length > 0) {
+            enemyPicks.forEach(enemy => {
+                const pairStat = calculateMatchupStats(enemy, hero, {patch: draftState.patch}).synergy;
+                if (pairStat.games >= 3) {
+                    const pairWr = pairStat.wins / pairStat.games;
+                    if (pairWr > 0.53) {
+                        score += (pairWr - 0.5) * 150;
+                        reasons.push(`<span class="text-amber-600">Комбо к ${enemy}:</span> ${pairStat.games} игр, ${fmtPct(pairWr*100)} WR`);
+                    }
+                }
+            });
+        }
+
+        // 3. Спасаем наших (Anti-Counter)
+        if (allyPicks.length > 0) {
+            allyPicks.forEach(ally => {
+                const pairStat = calculateMatchupStats(hero, ally, {patch: draftState.patch}).counter; 
+                if (pairStat.games >= 3) {
+                    const counterWr = pairStat.wins / pairStat.games;
+                    if (counterWr > 0.53) {
+                         score += (counterWr - 0.5) * 120;
+                         reasons.push(`<span class="text-indigo-600">Контрит нашего ${ally}:</span> ${pairStat.games} игр, ${fmtPct(counterWr*100)} WR`);
+                    }
+                }
+            });
+        }
+        
+        // 4. Meta Ban
+        const gStat = globalStats.find(s => s.hero === hero);
+        if (gStat && gStat.bans > 10) {
+            score += gStat.bans * 0.2; 
+            if (reasons.length === 0) reasons.push(`Мета бан: ${gStat.bans} банов`);
+        }
+
+        return { score, reasons };
+    }
+
+    function evaluateDraftStrength() {
+        const matches = getFilteredMatchesForHelper();
+        const globalStats = aggregate(matches, {});
+        
+        const bluePicks = draftState.blue.picks.map(getHero).filter(Boolean);
+        const redPicks = draftState.red.picks.map(getHero).filter(Boolean);
+
+        // Dummy calculation for now
+        const getTeamScore = (teamPicks, enemyPicks) => {
+            let total = 0;
+            teamPicks.forEach(h => {
+                 const gStat = globalStats.find(s=>s.hero===h);
+                 if(gStat) total += (gStat.wins/gStat.picks - 0.5) * 100;
+            });
+            return total;
+        };
+
+        const blueScore = getTeamScore(bluePicks, redPicks);
+        const redScore = getTeamScore(redPicks, bluePicks);
+
+        const diff = blueScore - redScore;
+        const probability = 50 + (diff / 3); 
+        const clampedProb = Math.max(10, Math.min(90, probability));
+        
+        dhStrengthBarFill.style.width = `${clampedProb}%`;
+        dhWinProbBlue.textContent = fmtPct(clampedProb);
+        dhWinProbRed.textContent = fmtPct(100 - clampedProb);
+    }
+
+    function updateDraftSuggestions() {
+        if (!draftState.activeSlot) return;
+
+        dhEmptyState.classList.add('hidden');
+        dhSuggestionsContainer.classList.remove('hidden');
+
+        const { team, type } = draftState.activeSlot;
+        const mySide = draftState.mySide; // 'blue' or 'red'
+        const isMyTurn = team === mySide;
+        const enemyTeamName = draftState.enemyTeam;
+        
+        dhSuggestBans.classList.add('hidden');
+        dhEnemyComfort.classList.add('hidden');
+        dhSuggestPicks.classList.add('hidden');
+        dhEnemyCounters.classList.add('hidden');
+
+        dhStatusText.textContent = isMyTurn ? 
+             (type === 'ban' ? "Советник: Кого забанить?" : "Советник: Кого пикнуть?") :
+             (type === 'ban' ? "Враг думает над баном..." : "Враг выбирает героя...");
+
+        const usedHeroes = new Set([
+            ...draftState.blue.bans, ...draftState.blue.picks.map(getHero),
+            ...draftState.red.bans, ...draftState.red.picks.map(getHero)
+        ].filter(Boolean));
+
+        const matches = getFilteredMatchesForHelper();
+        const globalStats = aggregate(matches, {});
+        
+        // Data for Calculation
+        const allyPicks = (team === 'blue' ? draftState.blue.picks : draftState.red.picks).map(getHero).filter(Boolean);
+        const enemyPicks = (team === 'blue' ? draftState.red.picks : draftState.blue.picks).map(getHero).filter(Boolean);
+        
+        // Filled roles for the current picking team
+        const teamPicksObj = (team === 'blue' ? draftState.blue.picks : draftState.red.picks);
+        const filledRoles = new Set(teamPicksObj.map(getRole).filter(Boolean));
+
+        let enemyTeamStats = null;
+        if (enemyTeamName) {
+             const enemyMatches = matches.filter(m => m.blue.team === enemyTeamName || m.red.team === enemyTeamName);
+             enemyTeamStats = aggregate(enemyMatches, { team: enemyTeamName });
+        }
+
+        if (type === 'ban') {
+             // --- BAN PHASE ---
+             dhSuggestBans.classList.remove('hidden');
+             let banCandidates = globalStats
+                .filter(s => !usedHeroes.has(s.hero))
+                .map(s => {
+                    const analysis = calculateBanScore(s.hero, {
+                        globalStats, enemyTeamStats, allyPicks, enemyPicks
+                    });
+                    return { hero: s.hero, score: analysis.score, reasons: analysis.reasons };
+                })
+                .filter(x => x.score > 0)
+                .sort((a,b) => b.score - a.score);
+             renderCardList(dhListBans, banCandidates.slice(0, 6), 'ban');
+
+        } else if (type === 'pick') {
+             // --- PICK PHASE ---
+
+             if (isMyTurn) {
+                 // **OUR TURN**
+                 dhSuggestPicks.classList.remove('hidden');
+                 
+                 let candidates = globalStats
+                    .filter(s => !usedHeroes.has(s.hero)) 
+                    .filter(s => s.picks >= 3)
+                    .map(c => {
+                         const analysis = calculateHeroScore(c.hero, {
+                             globalStats, enemyTeamStats, allyPicks, enemyPicks, filledRoles
+                         }, team);
+                         return { 
+                             hero: c.hero, 
+                             score: analysis.score, 
+                             reasons: analysis.reasons, 
+                             globalStat: analysis.globalStat
+                         };
+                    });
+
+                 candidates.sort((a,b) => b.score - a.score);
+                 const topPicks = candidates.slice(0, 10).map(c => ({
+                     hero: c.hero,
+                     details: c.reasons.length > 0 ? c.reasons : [c.globalStat]
+                 }));
+                 renderCardList(dhListPicks, topPicks, 'pick');
+                 
+                 // Show Threats
+                 if (allyPicks.length > 0) {
+                     dhEnemyCounters.classList.remove('hidden');
+                     let threats = globalStats.filter(s => !usedHeroes.has(s.hero)).map(c => {
+                         let threatScore = 0;
+                         let reasons = [];
+                         allyPicks.forEach(ally => {
+                             const pair = calculateMatchupStats(c.hero, ally, {patch: draftState.patch}).counter;
+                             if(pair.games >= 3) {
+                                 const wr = pair.wins/pair.games;
+                                 if (wr > 0.55) {
+                                     threatScore += (wr - 0.5);
+                                     reasons.push(`Контрит ${ally} (${fmtPct(wr*100)} WR)`);
+                                 }
+                             }
+                         });
+                         return { hero: c.hero, threatScore, details: reasons };
+                     }).filter(x => x.threatScore > 0).sort((a,b) => b.threatScore - a.threatScore);
+                     renderCardList(dhListCounters, threats.slice(0, 5), 'pick');
+                 }
+
+             } else {
+                 // **ENEMY TURN**
+                 dhEnemyComfort.classList.remove('hidden');
+                 
+                 let enemyLikelyPicks = globalStats
+                    .filter(s => !usedHeroes.has(s.hero))
+                    .map(c => {
+                         const analysis = calculateHeroScore(c.hero, {
+                             globalStats, 
+                             enemyTeamStats, // Comfort picks for them
+                             allyPicks: allyPicks, // Their allies
+                             enemyPicks: enemyPicks, // They want to counter ME
+                             filledRoles: new Set() // For prediction, assume they can pick anything
+                         }, team);
+                         
+                         return {
+                             hero: c.hero,
+                             score: analysis.score,
+                             reasons: analysis.reasons,
+                             globalStat: analysis.globalStat
+                         };
+                    })
+                    .sort((a,b) => b.score - a.score);
+
+                 const topLikely = enemyLikelyPicks.slice(0, 8).map(c => ({
+                     hero: c.hero,
+                     details: c.reasons.length > 0 ? c.reasons : [c.globalStat]
+                 }));
+                 
+                 dhListEnemyComfort.innerHTML = ''; 
+                 dhEnemyComfort.querySelector('h4').textContent = "Враг может взять (Прогноз):";
+                 renderCardList(dhListEnemyComfort, topLikely, 'pick');
+             }
+        }
+    }
+
+    function renderCardList(container, list, type) {
+        if (list.length === 0) {
+            container.innerHTML = '<div class="text-xs text-slate-400 italic">Нет данных</div>';
+            return;
+        }
+        container.innerHTML = list.map(item => {
+            const lines = item.details || item.reasons || [];
+            return `
+            <div class="suggestion-card flex items-start justify-between p-2 rounded-lg border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:shadow-sm" onclick="applyDraftSuggestion('${item.hero}')">
+               <div class="flex items-start gap-2 overflow-hidden">
+                  <img src="${heroImg(item.hero)}" class="w-9 h-9 rounded-md object-cover shrink-0">
+                  <div class="min-w-0">
+                     <div class="font-bold text-sm leading-tight truncate">${item.hero}</div>
+                     <div class="suggestion-reason mt-1">
+                        ${lines.map(line => `<div class="text-[10px] text-slate-600 leading-tight truncate bg-slate-100 rounded px-1 py-0.5 inline-block mb-0.5">${line}</div>`).join('')}
+                     </div>
+                  </div>
+               </div>
+               <div class="text-right shrink-0 ml-2">
+                  ${type === 'ban' ? 
+                    `<span class="text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded">BAN</span>` : 
+                    `<span class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded">PICK</span>`
+                  }
+               </div>
+            </div>
+        `}).join('');
+    }
+
+    window.applyDraftSuggestion = (heroName) => {
+        if (!draftState.activeSlot) return;
+        const {team, type, index} = draftState.activeSlot;
+        if (type === 'ban') {
+            draftState[team].bans[index] = heroName;
+        } else {
+            draftState[team].picks[index] = { hero: heroName, role: null };
+        }
+        renderDraftHelperBoard();
+        updateDraftSuggestions();
+    };
+
+    // --- END: Draft Helper Logic ---
 
     function topN(map,n,{best=true,minGames=5}={}){ const arr=[...map.entries()].map(([name,o])=>({name, games:o.games, wins:o.wins, wr:o.games?o.wins*100/o.games:0})).filter(x=>x.games>=minGames).sort((a,b)=> best? (b.wr-a.wr||b.games-a.games):(a.wr-b.wr||b.games-a.games)); return arr.slice(0,n); }
     function calcTeamStatsForHero(hero, matches) { const teamStats = new Map(); function processTeam(team, isWin) { if (!teamStats.has(team)) { teamStats.set(team, { games: 0, wins: 0 }); } const stats = teamStats.get(team); stats.games++; if (isWin) { stats.wins++; } } matches.forEach(m => { if (m.blue.picks.some(p => p.hero === hero)) { processTeam(m.blue.team, m.winner === 'blue'); } if (m.red.picks.some(p => p.hero === hero)) { processTeam(m.red.team, m.winner === 'red'); } }); return Array.from(teamStats.entries()).map(([team, stats]) => ({ name: team, games: stats.games, wins: stats.wins, wr: pct(stats.wins, stats.games) })).sort((a, b) => b.games - a.games || b.wr - a.wr); }
@@ -1019,11 +1327,13 @@
         if (currentUser && (currentUserRole === 'admin' || currentUserRole === 'viewer')) { 
             const currentTab = document.querySelector('.tab-btn.bg-slate-900').dataset.tab;
             rebuildFiltersAndStats(getCurrentDataSet()); 
-            if (currentTab === 'matchups') {
-                renderMatchups();
-            }
-            if (currentTab === 'team-analysis') {
-                renderTeamAnalysis();
+            if (currentTab === 'matchups') renderMatchups();
+            if (currentTab === 'team-analysis') renderTeamAnalysis();
+            if (currentTab === 'draft-helper') {
+                 const f = collectFilters(getCurrentDataSet());
+                 dhEnemyTeam.innerHTML = '<option value="">-- Выберите противника --</option>' + f.teams.filter(t=>t !== 'Все').map(v=>`<option value='${v}'>${v}</option>`).join('');
+                 dhFilterPatch.innerHTML = '<option value="">-- Все патчи --</option>' + f.patches.filter(t=>t !== 'Все').map(v=>`<option value='${v}'>${v}</option>`).join('');
+                 renderDraftHelperBoard();
             }
         } 
     }
