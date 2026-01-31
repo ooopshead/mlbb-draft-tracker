@@ -55,6 +55,15 @@
     .role-select { padding: 4px 8px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background-color: white; outline: none; cursor: pointer; }
     .dark .role-select { background-color: #1e293b; border-color: #475569; color: #e2e8f0; }
 
+    /* Summary Styles */
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+    .dark .summary-grid { border-top-color: #334155; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+    .val-pos { color: #10b981; font-weight: bold; }
+    .val-neg { color: #f43f5e; font-weight: bold; }
+    .val-neu { color: #94a3b8; }
+    .factor-list { max-height: 100px; overflow-y: auto; scrollbar-width: thin; margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.1); }
+    .factor-item { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -88,9 +97,13 @@
                 <span class="text-slate-400">Сила драфта (Win Prob)</span>
                 <span class="text-red-600">Шанс Красных: <span id="dh-win-prob-red">50%</span></span>
              </div>
-             <div class="strength-bar-container">
+             <div class="strength-bar-container mb-3">
                 <div id="dh-strength-bar-fill" class="strength-bar-blue" style="width: 50%;"></div>
                 <div class="strength-bar-red"></div>
+             </div>
+             <!-- Draft Summary Block -->
+             <div id="dh-draft-summary">
+                <div class="text-center text-slate-400 italic text-xs py-2">Начните выбор героев для анализа...</div>
              </div>
           </div>
 
@@ -172,6 +185,16 @@
                <p id="dh-status-text" class="text-xs text-slate-400">Выберите слот для начала...</p>
              </div>
              <div class="absolute right-0 top-0 opacity-10 text-9xl leading-none">?</div>
+          </div>
+
+          <!-- Блок ручной проверки -->
+          <div id="dh-preview-container" class="bg-white p-3 rounded-2xl shadow ring-1 ring-slate-200 hidden">
+             <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Проверить героя</label>
+             <div class="combo w-full">
+                <input id="dh-preview-input" class="w-full px-3 py-2 rounded-xl bg-slate-100 text-sm font-medium" placeholder="Найти и оценить..." />
+                <div class="combo-list hidden text-slate-900"></div>
+             </div>
+             <div id="dh-preview-result" class="mt-2 space-y-2"></div>
           </div>
 
           <div id="dh-suggestions-container" class="space-y-3 hidden">
@@ -542,6 +565,12 @@
     const dhStrengthBarFill = document.getElementById('dh-strength-bar-fill');
     const dhWinProbBlue = document.getElementById('dh-win-prob-blue');
     const dhWinProbRed = document.getElementById('dh-win-prob-red');
+    const dhDraftSummary = document.getElementById('dh-draft-summary');
+    
+    // New Elements for Preview
+    const dhPreviewContainer = document.getElementById('dh-preview-container');
+    const dhPreviewInput = document.getElementById('dh-preview-input');
+    const dhPreviewResult = document.getElementById('dh-preview-result');
 
     const HEROES = ["Aamon","Akai","Aldous","Alice","Alpha","Alucard","Angela","Argus","Arlott","Atlas","Aulus","Aurora","Badang","Balmond","Bane","Barats","Baxia","Beatrix","Belerick","Benedetta","Brody","Bruno","Carmilla","Cecilion","Chang'e","Chip","Chou","Cici","Claude","Clint","Cyclops","Diggie","Dyrroth","Edith","Esmeralda","Estes","Eudora","Fanny","Faramis","Floryn","Franco","Fredrinn","Freya","Gatotkaca","Gloo","Gord","Granger","Grock","Guinevere","Gusion","Hanabi","Hanzo","Harith","Harley","Hayabusa","Helcurt","Hilda","Hylos","Irithel","Ixia","Jawhead","Johnson","Joy","Julian","Kadita","Kagura","Kaja","Kalea","Karina","Karrie","Khaleed","Khufra","Kimmy","Lancelot","Lapu-Lapu","Layla","Leomord","Lesley","Ling","Lolita","Lukas","Lunox","Luo Yi","Lylia","Martis","Masha","Mathilda","Melissa","Minotaur","Minsitthar","Miya","Moskov","Nana","Natalia","Natan","Nolan","Novaria","Obsidia","Odette","Paquito","Pharsa","Phoveus","Popol and Kupa","Rafaela","Roger","Ruby","Saber","Selena","Silvanna","Sora","Sun","Suyou","Terizla","Thamuz","Tigreal","Uranus","Vale","Valentina","Valir","Vexana","Wanwan","X.Borg","Xavier","Yi Sun-shin","Yin","Yu Zhong","Yve","Zetian","Zhask","Zhuxin","Zilong"];
     const LS_IMG = 'mlbb_portraits_base_v1';
@@ -735,6 +764,8 @@
              dhPickerInput.value = '';
              dhPickerInput.disabled = true;
              dhStatusText.textContent = "Выберите слот для начала...";
+             dhPreviewContainer.classList.add('hidden');
+             dhDraftSummary.innerHTML = '<div class="text-center text-slate-400 italic text-xs py-2">Начните выбор героев для анализа...</div>';
              evaluateDraftStrength();
         });
         attachCombobox(dhPickerInput.parentElement, dhPickerInput);
@@ -753,6 +784,15 @@
                  updateDraftSuggestions();
                  evaluateDraftStrength();
              }
+        });
+        
+        // Preview listeners
+        attachCombobox(dhPreviewInput.parentElement, dhPreviewInput);
+        dhPreviewInput.addEventListener('change', (e) => {
+            if (draftState.activeSlot && e.target.value) {
+                showHeroPreview(e.target.value);
+                e.target.value = '';
+            }
         });
 
     })();
@@ -811,7 +851,7 @@
         }); 
     });
 
-    function attachCombobox(wrapper, inputEl){ const list = wrapper.querySelector('.combo-list'); let active = -1; function produce(q){ const qq=(q||'').trim().toLowerCase(); let items = HEROES; if (qq){ const starts = HEROES.filter(h => h.toLowerCase().startsWith(qq)); items = starts.length ? starts : HEROES.filter(h => h.toLowerCase().includes(qq)); } return items.slice(0,100); } function render(q){ const items = produce(q); if(!items.length){ list.classList.add('hidden'); list.innerHTML=''; return; } list.innerHTML = items.map((h,i)=>`<div class="combo-item" data-idx="${i}" data-value="${h}"><img src="${heroImg(h)}" alt=""/><span>${h}</span></div>`).join(''); list.classList.remove('hidden'); active=-1; list.querySelectorAll('.combo-item').forEach(div=>{ div.addEventListener('click',()=>{ inputEl.value=div.dataset.value; list.classList.add('hidden'); saveDraftDebounced(); inputEl.dispatchEvent(new Event('change', { bubbles: true })); }); }); } function moveActive(delta){ const items=[...list.querySelectorAll('.combo-item')]; if(!items.length) return; active=(active+delta+items.length)%items.length; items.forEach((el,i)=> el.setAttribute('aria-selected', i===active?'true':'false')); items[active].scrollIntoView({block:'nearest'}); } inputEl.addEventListener('keydown',(e)=>{ if(list.classList.contains('hidden')) return; if(e.key==='ArrowDown'){e.preventDefault();moveActive(1);} if(e.key==='ArrowUp'){e.preventDefault();moveActive(-1);} if(e.key==='Enter'&&active>=0){e.preventDefault();const el=list.querySelectorAll('.combo-item')[active]; if(el){ inputEl.value=el.dataset.value; list.classList.add('hidden'); saveDraftDebounced(); inputEl.dispatchEvent(new Event('change', { bubbles: true })); }} if(e.key==='Escape'){ list.classList.add('hidden'); }}); inputEl.addEventListener('input', ()=> render(inputEl.value)); inputEl.addEventListener('focus', ()=> render(inputEl.value)); inputEl.addEventListener('blur', ()=> setTimeout(()=>list.classList.add('hidden'), 150)); }
+    function attachCombobox(wrapper, inputEl){ const list = wrapper.querySelector('.combo-list'); let active = -1; function produce(q){ const qq=(q||'').trim().toLowerCase(); let items = HEROES; if (qq){ const starts = HEROES.filter(h => h.toLowerCase().startsWith(qq)); items = starts.length ? starts : HEROES.filter(h => h.toLowerCase().includes(qq)); } return items.slice(0,100); } function render(q){ const items = produce(q); if(!items.length){ list.classList.add('hidden'); list.innerHTML=''; return; } list.innerHTML = items.map((h,i)=>`<div class="combo-item" data-idx="${i}" data-value="${h}"><img src="${heroImg(h)}" alt=""/><span>${h}</span></div>`).join(''); list.classList.remove('hidden'); active=-1; list.querySelectorAll('.combo-item').forEach(div=>{ div.addEventListener('click',()=>{ inputEl.value=div.dataset.value; list.classList.add('hidden'); saveDraftDebounced(); inputEl.dispatchEvent(new Event('change', { bubbles: true })); }); }); } function moveActive(delta){ const items=[...list.querySelectorAll('.combo-item')]; if(!items.length) return; active=(active+delta+items.length)%items.length; items.forEach((el,i)=> el.setAttribute('aria-selected', i===active?'true':'false')); items[active].scrollIntoView({block:'nearest'}); } inputEl.addEventListener('keydown',(e)=>{ if(list.classList.contains('hidden')) return; if(e.key==='ArrowDown'){e.preventDefault();moveActive(1);} if(e.key==='ArrowUp'){e.preventDefault();moveActive(-1);} if(e.key==='Enter'&&active>=0){e.preventDefault();const el=list.querySelectorAll('.combo-item')[active]; if(el){ inputEl.value=el.dataset.value; list.classList.add('hidden'); saveDraftDebounced(); inputEl.dispatchEvent(new Event('change', { bubbles: true })); }} if(e.key==='Escape'){ list.classList.add('hidden'); }}); inputEl.addEventListener('input', ()=> render(inputEl.value)); inputEl.addEventListener('blur', ()=> setTimeout(()=>list.classList.add('hidden'), 150)); }
     function buildRows(container, tpl, count, prefill=[]) { container.innerHTML=''; for(let i=1;i<=count;i++){ const node = tpl.content.cloneNode(true); node.querySelector('.ord').textContent = i; const input = node.querySelector('input'); attachCombobox(node.querySelector('.combo'), input); const item = prefill[i-1]; if (item && item.hero) { input.value = item.hero; const roleSel = node.querySelector('select.pickRole'); if (roleSel && item.role) roleSel.value = item.role; } container.appendChild(node); } }
     function readFormDraft(){ try { return JSON.parse(localStorage.getItem(LS_FORM)) || null; } catch { return null; } }
     function writeFormDraft(d){ localStorage.setItem(LS_FORM, JSON.stringify(d)); }
@@ -855,7 +895,6 @@
     const MIN_GAMES_THRESHOLD = 5; 
     
     function renderDraftHelperBoard() {
-        // --- RENDER BANS (Horizontal, Squares) ---
         const createBanSlot = (team, index, val) => {
             const isFilled = !!val;
             const isActive = draftState.activeSlot && draftState.activeSlot.team === team && draftState.activeSlot.type === 'ban' && draftState.activeSlot.index === index;
@@ -870,26 +909,19 @@
               </div>`;
         };
 
-        // --- RENDER PICKS (Vertical, Rows with Select) ---
         const createPickRow = (team, index, val) => {
             const isFilled = !!val;
             const heroName = getHero(val);
             const role = getRole(val) || '';
             const isActive = draftState.activeSlot && draftState.activeSlot.team === team && draftState.activeSlot.type === 'pick' && draftState.activeSlot.index === index;
-            
             return `
               <div class="pick-row ${isActive ? 'active-slot' : ''}" onclick="window.selectDraftSlot('${team}', 'pick', ${index})">
-                 <!-- Image / Placeholder -->
                  <div class="relative w-12 h-12 shrink-0 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
                     ${isFilled ? `<img src="${heroImg(heroName)}" class="w-full h-full object-cover">` : `<span class="text-slate-300 font-bold text-xs">${index + 1}</span>`}
                  </div>
-                 
-                 <!-- Content -->
                  <div class="flex-1 min-w-0 flex flex-col justify-center h-full px-1">
                     <div class="font-bold text-sm truncate ${!isFilled ? 'text-slate-400' : ''}">${isFilled ? heroName : 'Выберите героя'}</div>
                  </div>
-
-                 <!-- Role Select & Remove -->
                  ${isFilled ? `
                    <select class="role-select" onclick="event.stopPropagation()" onchange="window.updateRole('${team}', ${index}, this.value)">
                       <option value="" ${role===''?'selected':''}>Роль?</option>
@@ -906,7 +938,6 @@
 
         dhBlueBans.innerHTML = draftState.blue.bans.map((h, i) => createBanSlot('blue', i, h)).join('');
         dhRedBans.innerHTML = draftState.red.bans.map((h, i) => createBanSlot('red', i, h)).join('');
-
         dhBluePicks.innerHTML = draftState.blue.picks.map((h, i) => createPickRow('blue', i, h)).join('');
         dhRedPicks.innerHTML = draftState.red.picks.map((h, i) => createPickRow('red', i, h)).join('');
         
@@ -919,6 +950,7 @@
         dhPickerInput.disabled = false;
         dhPickerInput.value = '';
         dhPickerInput.focus();
+        dhPreviewContainer.classList.remove('hidden');
         updateDraftSuggestions();
     };
 
@@ -937,20 +969,157 @@
     window.updateRole = (team, index, newRole) => {
         if (draftState[team].picks[index]) {
             draftState[team].picks[index].role = newRole;
-            // Re-render is tricky because it kills focus, but necessary to update state visually if needed
-            // But usually select holds its own state visually, so we just update data and suggestions
             updateDraftSuggestions(); 
+            evaluateDraftStrength();
         }
     }
 
+    function evaluateDraftStrength() {
+        const matches = getFilteredMatchesForHelper();
+        const globalStats = aggregate(matches, {});
+        
+        const analyzeTeam = (picksArray, enemyPicksArray) => {
+            let res = { score: 0, factors: [], meta: 0, synergy: 0, counter: 0, comp: 0 };
+            let rolesFilled = new Set();
+            let heroes = picksArray.map(getHero).filter(Boolean);
+            let enemies = enemyPicksArray.map(getHero).filter(Boolean);
+            
+            if (heroes.length === 0) return res;
+
+            // 1. Meta
+            let avgWr = 0, valid = 0;
+            heroes.forEach(h => {
+                const s = globalStats.find(x => x.hero === h);
+                if (s && s.picks >= 3) {
+                    const wr = s.wins / s.picks;
+                    avgWr += wr;
+                    valid++;
+                    if (wr > 0.55) res.factors.push({ text: `${h}: High WR`, type: 'pos' });
+                }
+            });
+            if (valid > 0) {
+                res.meta = Math.round((avgWr / valid - 0.5) * 200);
+                res.score += res.meta;
+            }
+
+            // 2. Synergy (Positive and Negative)
+            for (let i=0; i<heroes.length; i++) {
+                for (let j=i+1; j<heroes.length; j++) {
+                    const pair = calculateMatchupStats(heroes[i], heroes[j], {patch: draftState.patch}).synergy;
+                    if (pair.games >= 3) {
+                        const wr = pair.wins / pair.games;
+                        if (wr > 0.55) {
+                            const bonus = Math.round((wr - 0.5) * 400); 
+                            res.synergy += bonus;
+                            res.factors.push({ text: `Связка: ${heroes[i]}+${heroes[j]}`, type: 'pos' });
+                        } else if (wr < 0.48) {
+                            const malus = Math.round((0.5 - wr) * 400);
+                            res.synergy -= malus;
+                            res.factors.push({ text: `Плохая связка: ${heroes[i]}+${heroes[j]}`, type: 'neg' });
+                        }
+                    }
+                }
+            }
+            res.score += res.synergy;
+
+            // 3. Counter
+            heroes.forEach(my => {
+                enemies.forEach(en => {
+                    const pair = calculateMatchupStats(my, en, {patch: draftState.patch}).counter;
+                    if (pair.games >= 3) {
+                        const wr = pair.wins / pair.games; 
+                        if (wr > 0.55) {
+                            const bonus = Math.round((wr - 0.5) * 600); 
+                            res.counter += bonus;
+                            res.factors.push({ text: `${my} контрит ${en}`, type: 'pos' });
+                        } else if (wr < 0.45) {
+                            const malus = Math.round((0.5 - wr) * 600);
+                            res.counter -= malus;
+                            res.factors.push({ text: `${my} слаб против ${en}`, type: 'neg' });
+                        }
+                    }
+                });
+            });
+            res.score += res.counter;
+
+            // 4. Composition
+            picksArray.forEach(p => {
+                if (!p) return;
+                let r = p.role;
+                if (!r) {
+                    const s = globalStats.find(x => x.hero === p.hero);
+                    if (s && s.roles) {
+                        let bestR = null, max = 0;
+                        for(let k in s.roles) { if(s.roles[k].picks > max) { max = s.roles[k].picks; bestR = k; } }
+                        r = bestR;
+                    }
+                }
+                if (r) rolesFilled.add(r);
+            });
+            if (heroes.length >= 4) {
+                if (!rolesFilled.has('jungle')) { res.comp -= 40; res.factors.push({ text: 'Нет Лесника', type: 'neg' }); }
+                if (!rolesFilled.has('roam')) { res.comp -= 30; res.factors.push({ text: 'Нет Роума', type: 'neg' }); }
+            }
+            res.score += res.comp;
+
+            return res;
+        };
+
+        const blueAnalysis = analyzeTeam(draftState.blue.picks, draftState.red.picks);
+        const redAnalysis = analyzeTeam(draftState.red.picks, draftState.blue.picks);
+
+        let diff = blueAnalysis.score - redAnalysis.score;
+        let probability = 50 + (Math.tanh(diff / 500) * 40); 
+        probability = Math.max(10, Math.min(90, probability));
+
+        dhStrengthBarFill.style.width = `${probability}%`;
+        dhWinProbBlue.textContent = fmtPct(probability);
+        dhWinProbRed.textContent = fmtPct(100 - probability);
+
+        generateDraftSummary(blueAnalysis, redAnalysis);
+    }
+
+    function generateDraftSummary(blue, red) {
+        const fmtNum = (n) => (n > 0 ? `+${n}` : `${n}`);
+        const getCls = (n) => (n > 0 ? 'val-pos' : (n < 0 ? 'val-neg' : 'val-neu'));
+
+        const renderCol = (data, title, titleColor) => `
+            <div class="flex flex-col">
+                <div class="font-bold text-[10px] uppercase ${titleColor} mb-1 border-b pb-1 border-slate-200 dark:border-slate-700">${title}</div>
+                <div class="summary-grid">
+                    <div class="summary-row"><span>Мета</span> <span class="${getCls(data.meta)}">${fmtNum(data.meta)}</span></div>
+                    <div class="summary-row"><span>Синергия</span> <span class="${getCls(data.synergy)}">${fmtNum(data.synergy)}</span></div>
+                    <div class="summary-row"><span>Контрпики</span> <span class="${getCls(data.counter)}">${fmtNum(data.counter)}</span></div>
+                    <div class="summary-row"><span>Состав</span> <span class="${getCls(data.comp)}">${fmtNum(data.comp)}</span></div>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-2 mb-1">Ключевые факторы:</div>
+                <div class="factor-list">
+                    ${data.factors.slice(0, 10).map(f => `
+                        <div class="factor-item">
+                            <span class="truncate pr-1 ${f.type === 'pos' ? 'text-slate-700 dark:text-slate-300' : 'text-rose-500'}">${f.text}</span>
+                            <span class="${f.type === 'pos' ? 'factor-pos' : 'factor-neg'}">${f.type === 'pos' ? '▲' : '▼'}</span>
+                        </div>
+                    `).join('')}
+                    ${data.factors.length === 0 ? '<div class="text-slate-300">-</div>' : ''}
+                </div>
+            </div>
+        `;
+
+        dhDraftSummary.innerHTML = `
+            <div class="grid grid-cols-2 gap-4 text-xs mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                ${renderCol(blue, 'Синие', 'text-blue-600')}
+                ${renderCol(red, 'Красные', 'text-red-600')}
+            </div>
+        `;
+    }
+
+    // Existing helper functions below...
     function getFilteredMatchesForHelper() {
         let matches = getCurrentDataSet();
         if (draftState.patch) matches = matches.filter(m => m.patch === draftState.patch);
         return matches;
     }
 
-    // Расширенная функция оценки героя
-    // targetSide = 'blue' or 'red' (For whom are we calculating score?)
     function calculateHeroScore(hero, context, targetSide) {
         const { globalStats, enemyTeamStats, allyPicks, enemyPicks, filledRoles } = context;
         let score = 0;
@@ -959,22 +1128,17 @@
         const gStat = globalStats.find(s => s.hero === hero);
         if (!gStat || gStat.presence < 3) return { score: -9999, reasons: [], stats: null };
 
-        // --- FILTER BY ROLE (STRICT) ---
-        // If the candidate hero is primarily played in a role that is already FILLED, skip them.
         let dominantRole = null;
         if (gStat.roles) {
             let maxCount = 0;
-            // Determine primary role from global stats
             Object.entries(gStat.roles).forEach(([r, stats]) => {
                 if (stats.picks > maxCount) { maxCount = stats.picks; dominantRole = r; }
             });
-            // If dominant role matches a filled role, huge penalty
             if (dominantRole && filledRoles.has(dominantRole)) {
                 score -= 5000; 
             }
         }
 
-        // --- BASE SCORE ---
         const pickBanRate = gStat.presence;
         const wr = gStat.wins / gStat.picks;
         if (gStat.picks < MIN_GAMES_THRESHOLD) {
@@ -985,7 +1149,6 @@
         }
         const baseStatStr = `Global: ${gStat.picks} игр, ${fmtPct(wr*100)} WR`;
 
-        // --- 1. SYNERGY (С союзниками) ---
         if (allyPicks.length > 0) {
             allyPicks.forEach(ally => {
                 const pairStat = calculateMatchupStats(hero, ally, {patch: draftState.patch}).synergy;
@@ -993,13 +1156,15 @@
                     const pairWr = pairStat.wins / pairStat.games;
                     if (pairWr > 0.52) {
                         score += (pairWr - 0.5) * 150;
-                        reasons.push(`<span class="text-emerald-600">Синергия с ${ally}:</span> ${pairStat.games} игр, ${fmtPct(pairWr*100)} WR`);
+                        reasons.push(`<span class="text-emerald-600">Синергия с ${ally}:</span> ${fmtPct(pairWr*100)} WR`);
+                    } else if (pairWr < 0.48) {
+                        score -= (0.5 - pairWr) * 150;
+                        reasons.push(`<span class="text-rose-500">Конфликт с ${ally}:</span> ${fmtPct(pairWr*100)} WR`);
                     }
                 }
             });
         }
 
-        // --- 2. COUNTER (Против врагов) ---
         if (enemyPicks.length > 0) {
             enemyPicks.forEach(enemy => {
                 const pairStat = calculateMatchupStats(hero, enemy, {patch: draftState.patch}).counter;
@@ -1007,7 +1172,7 @@
                     const counterWr = pairStat.wins / pairStat.games;
                     if (counterWr > 0.53) {
                         score += (counterWr - 0.5) * 120;
-                        reasons.push(`<span class="text-blue-600">Контрит ${enemy}:</span> ${pairStat.games} игр, ${fmtPct(counterWr*100)} WR`);
+                        reasons.push(`<span class="text-blue-600">Контрит ${enemy}:</span> ${fmtPct(counterWr*100)} WR`);
                     } else if (counterWr < 0.45) {
                         score -= 200;
                         reasons.push(`<span class="text-rose-500">Слаб против ${enemy}:</span> ${fmtPct(counterWr*100)} WR`);
@@ -1016,31 +1181,24 @@
             });
         }
         
-        // --- 3. DENIAL / BLOCK (Забрать комбо у врага) ---
-        // Только если это ход Нашей команды, и мы смотрим на пики врага
-        // Если 'hero' создает супер-комбо с 'enemyPicks', нам выгодно его забрать (denial)
         if (enemyPicks.length > 0) {
              enemyPicks.forEach(enemy => {
                  const pairStat = calculateMatchupStats(hero, enemy, {patch: draftState.patch}).synergy;
-                 // Если бы они были вместе, какой WR?
                  if (pairStat.games >= 3) {
                      const pairWr = pairStat.wins / pairStat.games;
                      if (pairWr > 0.55) {
-                         // Это сильная связка для врага. Перехватим!
                          score += (pairWr - 0.5) * 100;
-                         reasons.push(`<span class="text-amber-600">Denial (Ломаем комбо ${enemy}):</span> ${pairStat.games} игр, ${fmtPct(pairWr*100)} WR`);
+                         reasons.push(`<span class="text-amber-600">Denial (Ломаем комбо ${enemy}):</span> ${fmtPct(pairWr*100)} WR`);
                      }
                  }
              });
         }
 
-        // --- 4. ENEMY COMFORT ---
         if (enemyTeamStats) {
             const eStat = enemyTeamStats.find(s => s.hero === hero);
             if (eStat) {
                 const enemyHeroWr = eStat.wins / eStat.picks;
                 if (eStat.picks >= 3 && enemyHeroWr > 0.55) {
-                    // Если мы пикаем, это Denial мейна
                     score += 50; 
                     reasons.push(`<span class="text-amber-600">Мейн врага (Pick to Deny):</span> ${eStat.picks} игр, ${fmtPct(enemyHeroWr*100)} WR`);
                 }
@@ -1055,7 +1213,6 @@
         let score = 0;
         let reasons = [];
 
-        // 1. Мейн врага
         if (enemyTeamStats) {
             const eStat = enemyTeamStats.find(s => s.hero === hero);
             if (eStat && eStat.picks >= 3) {
@@ -1065,7 +1222,6 @@
             }
         }
 
-        // 2. Ломаем комбо врагу
         if (enemyPicks.length > 0) {
             enemyPicks.forEach(enemy => {
                 const pairStat = calculateMatchupStats(enemy, hero, {patch: draftState.patch}).synergy;
@@ -1079,7 +1235,6 @@
             });
         }
 
-        // 3. Спасаем наших (Anti-Counter)
         if (allyPicks.length > 0) {
             allyPicks.forEach(ally => {
                 const pairStat = calculateMatchupStats(hero, ally, {patch: draftState.patch}).counter; 
@@ -1093,7 +1248,6 @@
             });
         }
         
-        // 4. Meta Ban
         const gStat = globalStats.find(s => s.hero === hero);
         if (gStat && gStat.bans > 10) {
             score += gStat.bans * 0.2; 
@@ -1103,33 +1257,33 @@
         return { score, reasons };
     }
 
-    function evaluateDraftStrength() {
+    function showHeroPreview(heroName) {
+        if (!draftState.activeSlot) return;
+        const { team, type } = draftState.activeSlot;
+        
         const matches = getFilteredMatchesForHelper();
         const globalStats = aggregate(matches, {});
+        const allyPicks = (team === 'blue' ? draftState.blue.picks : draftState.red.picks).map(getHero).filter(Boolean);
+        const enemyPicks = (team === 'blue' ? draftState.red.picks : draftState.blue.picks).map(getHero).filter(Boolean);
+        const teamPicksObj = (team === 'blue' ? draftState.blue.picks : draftState.red.picks);
+        const filledRoles = new Set(teamPicksObj.map(getRole).filter(Boolean));
         
-        const bluePicks = draftState.blue.picks.map(getHero).filter(Boolean);
-        const redPicks = draftState.red.picks.map(getHero).filter(Boolean);
+        let enemyTeamStats = null;
+        if (draftState.enemyTeam) {
+             const enemyMatches = matches.filter(m => m.blue.team === draftState.enemyTeam || m.red.team === draftState.enemyTeam);
+             enemyTeamStats = aggregate(enemyMatches, { team: draftState.enemyTeam });
+        }
 
-        // Dummy calculation for now
-        const getTeamScore = (teamPicks, enemyPicks) => {
-            let total = 0;
-            teamPicks.forEach(h => {
-                 const gStat = globalStats.find(s=>s.hero===h);
-                 if(gStat) total += (gStat.wins/gStat.picks - 0.5) * 100;
-            });
-            return total;
-        };
+        let item = null;
+        if (type === 'ban') {
+            const analysis = calculateBanScore(heroName, { globalStats, enemyTeamStats, allyPicks, enemyPicks });
+            item = { hero: heroName, details: analysis.reasons };
+        } else {
+            const analysis = calculateHeroScore(heroName, { globalStats, enemyTeamStats, allyPicks, enemyPicks, filledRoles }, team);
+            item = { hero: heroName, details: analysis.reasons.length ? analysis.reasons : [analysis.globalStat || 'Нет данных'] };
+        }
 
-        const blueScore = getTeamScore(bluePicks, redPicks);
-        const redScore = getTeamScore(redPicks, bluePicks);
-
-        const diff = blueScore - redScore;
-        const probability = 50 + (diff / 3); 
-        const clampedProb = Math.max(10, Math.min(90, probability));
-        
-        dhStrengthBarFill.style.width = `${clampedProb}%`;
-        dhWinProbBlue.textContent = fmtPct(clampedProb);
-        dhWinProbRed.textContent = fmtPct(100 - clampedProb);
+        renderCardList(dhPreviewResult, [item], type);
     }
 
     function updateDraftSuggestions() {
@@ -1137,9 +1291,12 @@
 
         dhEmptyState.classList.add('hidden');
         dhSuggestionsContainer.classList.remove('hidden');
+        
+        dhPreviewResult.innerHTML = '';
+        dhPreviewInput.value = '';
 
         const { team, type } = draftState.activeSlot;
-        const mySide = draftState.mySide; // 'blue' or 'red'
+        const mySide = draftState.mySide;
         const isMyTurn = team === mySide;
         const enemyTeamName = draftState.enemyTeam;
         
@@ -1160,11 +1317,9 @@
         const matches = getFilteredMatchesForHelper();
         const globalStats = aggregate(matches, {});
         
-        // Data for Calculation
         const allyPicks = (team === 'blue' ? draftState.blue.picks : draftState.red.picks).map(getHero).filter(Boolean);
         const enemyPicks = (team === 'blue' ? draftState.red.picks : draftState.blue.picks).map(getHero).filter(Boolean);
         
-        // Filled roles for the current picking team
         const teamPicksObj = (team === 'blue' ? draftState.blue.picks : draftState.red.picks);
         const filledRoles = new Set(teamPicksObj.map(getRole).filter(Boolean));
 
@@ -1175,7 +1330,6 @@
         }
 
         if (type === 'ban') {
-             // --- BAN PHASE ---
              dhSuggestBans.classList.remove('hidden');
              let banCandidates = globalStats
                 .filter(s => !usedHeroes.has(s.hero))
@@ -1190,10 +1344,7 @@
              renderCardList(dhListBans, banCandidates.slice(0, 6), 'ban');
 
         } else if (type === 'pick') {
-             // --- PICK PHASE ---
-
              if (isMyTurn) {
-                 // **OUR TURN**
                  dhSuggestPicks.classList.remove('hidden');
                  
                  let candidates = globalStats
@@ -1218,7 +1369,6 @@
                  }));
                  renderCardList(dhListPicks, topPicks, 'pick');
                  
-                 // Show Threats
                  if (allyPicks.length > 0) {
                      dhEnemyCounters.classList.remove('hidden');
                      let threats = globalStats.filter(s => !usedHeroes.has(s.hero)).map(c => {
@@ -1240,7 +1390,6 @@
                  }
 
              } else {
-                 // **ENEMY TURN**
                  dhEnemyComfort.classList.remove('hidden');
                  
                  let enemyLikelyPicks = globalStats
@@ -1248,10 +1397,10 @@
                     .map(c => {
                          const analysis = calculateHeroScore(c.hero, {
                              globalStats, 
-                             enemyTeamStats, // Comfort picks for them
-                             allyPicks: allyPicks, // Their allies
-                             enemyPicks: enemyPicks, // They want to counter ME
-                             filledRoles: new Set() // For prediction, assume they can pick anything
+                             enemyTeamStats, 
+                             allyPicks: allyPicks, 
+                             enemyPicks: enemyPicks, 
+                             filledRoles: new Set() 
                          }, team);
                          
                          return {
@@ -1314,8 +1463,6 @@
         renderDraftHelperBoard();
         updateDraftSuggestions();
     };
-
-    // --- END: Draft Helper Logic ---
 
     function topN(map,n,{best=true,minGames=5}={}){ const arr=[...map.entries()].map(([name,o])=>({name, games:o.games, wins:o.wins, wr:o.games?o.wins*100/o.games:0})).filter(x=>x.games>=minGames).sort((a,b)=> best? (b.wr-a.wr||b.games-a.games):(a.wr-b.wr||b.games-a.games)); return arr.slice(0,n); }
     function calcTeamStatsForHero(hero, matches) { const teamStats = new Map(); function processTeam(team, isWin) { if (!teamStats.has(team)) { teamStats.set(team, { games: 0, wins: 0 }); } const stats = teamStats.get(team); stats.games++; if (isWin) { stats.wins++; } } matches.forEach(m => { if (m.blue.picks.some(p => p.hero === hero)) { processTeam(m.blue.team, m.winner === 'blue'); } if (m.red.picks.some(p => p.hero === hero)) { processTeam(m.red.team, m.winner === 'red'); } }); return Array.from(teamStats.entries()).map(([team, stats]) => ({ name: team, games: stats.games, wins: stats.wins, wr: pct(stats.wins, stats.games) })).sort((a, b) => b.games - a.games || b.wr - a.wr); }
