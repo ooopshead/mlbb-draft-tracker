@@ -978,7 +978,6 @@
         const matches = getFilteredMatchesForHelper();
         const globalStats = aggregate(matches, {});
         
-        // Helper: Analyze one team
         const analyzeTeam = (picksArray, enemyPicksArray) => {
             let res = { score: 0, factors: [], meta: 0, synergy: 0, counter: 0, comp: 0 };
             let rolesFilled = new Set();
@@ -987,7 +986,7 @@
             
             if (heroes.length === 0) return res;
 
-            // 1. Meta Score (Base Strength)
+            // 1. Meta
             let avgWr = 0, valid = 0;
             heroes.forEach(h => {
                 const s = globalStats.find(x => x.hero === h);
@@ -1003,34 +1002,41 @@
                 res.score += res.meta;
             }
 
-            // 2. Synergy
+            // 2. Synergy (Positive and Negative)
             for (let i=0; i<heroes.length; i++) {
                 for (let j=i+1; j<heroes.length; j++) {
                     const pair = calculateMatchupStats(heroes[i], heroes[j], {patch: draftState.patch}).synergy;
                     if (pair.games >= 3) {
                         const wr = pair.wins / pair.games;
-                        const deviation = wr - 0.5;
-                        const points = Math.round(deviation * 400); // 400 weight for synergy
-                        res.synergy += points;
-                        if (wr > 0.55) res.factors.push({ text: `Связка: ${heroes[i]}+${heroes[j]}`, type: 'pos' });
-                        if (wr < 0.48) res.factors.push({ text: `Плохая связка: ${heroes[i]}+${heroes[j]}`, type: 'neg' });
+                        if (wr > 0.55) {
+                            const bonus = Math.round((wr - 0.5) * 400); 
+                            res.synergy += bonus;
+                            res.factors.push({ text: `Связка: ${heroes[i]}+${heroes[j]}`, type: 'pos' });
+                        } else if (wr < 0.48) {
+                            const malus = Math.round((0.5 - wr) * 400);
+                            res.synergy -= malus;
+                            res.factors.push({ text: `Плохая связка: ${heroes[i]}+${heroes[j]}`, type: 'neg' });
+                        }
                     }
                 }
             }
             res.score += res.synergy;
 
-            // 3. Counter (My heroes vs Enemies)
+            // 3. Counter
             heroes.forEach(my => {
                 enemies.forEach(en => {
                     const pair = calculateMatchupStats(my, en, {patch: draftState.patch}).counter;
                     if (pair.games >= 3) {
-                        const wr = pair.wins / pair.games; // My winrate vs Enemy
-                        const deviation = wr - 0.5;
-                        const points = Math.round(deviation * 600); // 600 weight for counter
-                        res.counter += points;
-                        
-                        if (wr > 0.55) res.factors.push({ text: `${my} контрит ${en}`, type: 'pos' });
-                        else if (wr < 0.45) res.factors.push({ text: `${my} слаб против ${en}`, type: 'neg' });
+                        const wr = pair.wins / pair.games; 
+                        if (wr > 0.55) {
+                            const bonus = Math.round((wr - 0.5) * 600); 
+                            res.counter += bonus;
+                            res.factors.push({ text: `${my} контрит ${en}`, type: 'pos' });
+                        } else if (wr < 0.45) {
+                            const malus = Math.round((0.5 - wr) * 600);
+                            res.counter -= malus;
+                            res.factors.push({ text: `${my} слаб против ${en}`, type: 'neg' });
+                        }
                     }
                 });
             });
@@ -1053,9 +1059,6 @@
             if (heroes.length >= 4) {
                 if (!rolesFilled.has('jungle')) { res.comp -= 40; res.factors.push({ text: 'Нет Лесника', type: 'neg' }); }
                 if (!rolesFilled.has('roam')) { res.comp -= 30; res.factors.push({ text: 'Нет Роума', type: 'neg' }); }
-                if (!rolesFilled.has('mid')) { res.comp -= 10; }
-                if (!rolesFilled.has('gold')) { res.comp -= 10; }
-                if (!rolesFilled.has('exp')) { res.comp -= 10; }
             }
             res.score += res.comp;
 
@@ -1073,7 +1076,6 @@
         dhWinProbBlue.textContent = fmtPct(probability);
         dhWinProbRed.textContent = fmtPct(100 - probability);
 
-        // Generate Summary
         generateDraftSummary(blueAnalysis, redAnalysis);
     }
 
@@ -1084,14 +1086,12 @@
         const renderCol = (data, title, titleColor) => `
             <div class="flex flex-col">
                 <div class="font-bold text-[10px] uppercase ${titleColor} mb-1 border-b pb-1 border-slate-200 dark:border-slate-700">${title}</div>
-                
                 <div class="summary-grid">
                     <div class="summary-row"><span>Мета</span> <span class="${getCls(data.meta)}">${fmtNum(data.meta)}</span></div>
                     <div class="summary-row"><span>Синергия</span> <span class="${getCls(data.synergy)}">${fmtNum(data.synergy)}</span></div>
                     <div class="summary-row"><span>Контрпики</span> <span class="${getCls(data.counter)}">${fmtNum(data.counter)}</span></div>
                     <div class="summary-row"><span>Состав</span> <span class="${getCls(data.comp)}">${fmtNum(data.comp)}</span></div>
                 </div>
-                
                 <div class="text-[10px] text-slate-400 mt-2 mb-1">Ключевые факторы:</div>
                 <div class="factor-list">
                     ${data.factors.slice(0, 10).map(f => `
@@ -1157,7 +1157,7 @@
                     if (pairWr > 0.52) {
                         score += (pairWr - 0.5) * 150;
                         reasons.push(`<span class="text-emerald-600">Синергия с ${ally}:</span> ${fmtPct(pairWr*100)} WR`);
-                    } else if (pairWr < 0.48) { // NEW BLOCK
+                    } else if (pairWr < 0.48) {
                         score -= (0.5 - pairWr) * 150;
                         reasons.push(`<span class="text-rose-500">Конфликт с ${ally}:</span> ${fmtPct(pairWr*100)} WR`);
                     }
