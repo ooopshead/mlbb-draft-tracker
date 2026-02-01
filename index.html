@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MLBB Draft Tracker (Anti-Noise v2.3)</title>
+  <title>MLBB Draft Tracker (Role Filter v2.5)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .fade-in { animation: fadeIn .2s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none; } }
@@ -63,18 +63,7 @@
     .val-pos { color: #10b981; font-weight: bold; }
     .val-neg { color: #f43f5e; font-weight: bold; }
     .val-neu { color: #94a3b8; }
-    /* SCROLLABLE FACTORS */
-    .factor-list { 
-        margin-top: 6px; 
-        padding-top: 6px; 
-        border-top: 1px dashed rgba(0,0,0,0.1); 
-        display: flex; 
-        flex-direction: column; 
-        gap: 2px;
-        max-height: 160px; /* Fixed height */
-        overflow-y: auto;  /* Scroll */
-        scrollbar-width: thin;
-    }
+    .factor-list { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 2px; max-height: 160px; overflow-y: auto; scrollbar-width: thin; }
     .factor-item { display: flex; justify-content: space-between; font-size: 10px; padding-right: 4px; }
   </style>
 </head>
@@ -83,7 +72,7 @@
     <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg"><h1 class="text-2xl font-bold text-center mb-6">MLBB Draft Tracker</h1><div class="mb-4 flex justify-center border-b"><button id="show-login-btn" class="px-4 py-2 -mb-px border-b-2 border-slate-900 font-semibold">Вход</button><button id="show-signup-btn" class="px-4 py-2 text-slate-500">Регистрация</button></div><form id="loginForm"><div class="space-y-4"><input id="loginEmail" type="email" autocomplete="email" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Email" required /><input id="loginPassword" type="password" autocomplete="current-password" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Пароль" required /><button type="submit" class="w-full px-3 py-3 rounded-xl bg-slate-900 text-white font-semibold">Войти</button></div></form><form id="signupForm" class="hidden"><div class="space-y-4"><input id="signupEmail" type="email" autocomplete="email" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Email" required /><input id="signupPassword" type="password" autocomplete="new-password" class="w-full px-3 py-2 rounded-xl bg-slate-100" placeholder="Придумайте пароль" required /><button type="submit" class="w-full px-3 py-3 rounded-xl bg-slate-900 text-white font-semibold">Зарегистрироваться</button></div><p class="text-xs text-slate-500 mt-4 text-center">После регистрации дождитесь, пока администратор предоставит вам доступ.</p></form></div>
   </div>
   <div id="app-container" class="hidden max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <header class="flex items-center justify-between mb-4 flex-wrap gap-4"><div class="flex items-center gap-4"><h1 class="text-2xl font-bold tracking-tight">MLBB Draft Tracker <span class="text-xs font-normal text-slate-400 border border-slate-300 rounded px-1.5 py-0.5 ml-2">Anti-Noise v2.3</span></h1><div id="draft-mode-toggle" class="inline-flex rounded-lg bg-slate-200 p-1"><button data-mode="standard" class="mode-btn px-3 py-1 text-sm font-semibold rounded-md bg-white shadow">Standard</button><button data-mode="brave" class="mode-btn px-3 py-1 text-sm font-semibold rounded-md">Brave Draft (MCC)</button></div></div><div class="flex items-center gap-4 flex-wrap"><div id="admin-tools" class="hidden items-center gap-2"><button id="exportBtn" class="px-3 py-2 text-sm rounded-xl bg-slate-200">Экспорт JSON</button><label class="px-3 py-2 text-sm rounded-xl bg-slate-200 cursor-pointer">Импорт JSON<input id="importInput" type="file" accept="application/json" class="hidden" /></label><button id="deleteAllBtn" class="px-3 py-2 text-sm rounded-xl bg-rose-600 text-white">Удалить всё</button></div><div id="userInfo" class="text-sm flex items-center gap-3"><span id="userEmail" class="text-slate-600"></span><button id="logoutBtn" class="px-3 py-2 rounded-xl bg-slate-200">Выйти</button></div><input id="imgBaseInput" class="hidden sm:block w-64 px-3 py-2 rounded-xl bg-slate-100" placeholder="Папка портретов: ./portraits/" /><button id="themeToggle" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300" title="Тёмная/светлая тема">🌙</button></div></header>
+    <header class="flex items-center justify-between mb-4 flex-wrap gap-4"><div class="flex items-center gap-4"><h1 class="text-2xl font-bold tracking-tight">MLBB Draft Tracker <span class="text-xs font-normal text-slate-400 border border-slate-300 rounded px-1.5 py-0.5 ml-2">Role Filter v2.5</span></h1><div id="draft-mode-toggle" class="inline-flex rounded-lg bg-slate-200 p-1"><button data-mode="standard" class="mode-btn px-3 py-1 text-sm font-semibold rounded-md bg-white shadow">Standard</button><button data-mode="brave" class="mode-btn px-3 py-1 text-sm font-semibold rounded-md">Brave Draft (MCC)</button></div></div><div class="flex items-center gap-4 flex-wrap"><div id="admin-tools" class="hidden items-center gap-2"><button id="exportBtn" class="px-3 py-2 text-sm rounded-xl bg-slate-200">Экспорт JSON</button><label class="px-3 py-2 text-sm rounded-xl bg-slate-200 cursor-pointer">Импорт JSON<input id="importInput" type="file" accept="application/json" class="hidden" /></label><button id="deleteAllBtn" class="px-3 py-2 text-sm rounded-xl bg-rose-600 text-white">Удалить всё</button></div><div id="userInfo" class="text-sm flex items-center gap-3"><span id="userEmail" class="text-slate-600"></span><button id="logoutBtn" class="px-3 py-2 rounded-xl bg-slate-200">Выйти</button></div><input id="imgBaseInput" class="hidden sm:block w-64 px-3 py-2 rounded-xl bg-slate-100" placeholder="Папка портретов: ./portraits/" /><button id="themeToggle" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300" title="Тёмная/светлая тема">🌙</button></div></header>
     <nav class="inline-flex rounded-2xl bg-white shadow ring-1 ring-slate-200 overflow-hidden mb-4 overflow-x-auto">
       <button data-tab="stats" class="tab-btn px-4 py-2 text-sm font-medium bg-slate-900 text-white whitespace-nowrap">Статистика</button>
       <button data-tab="matches" class="tab-btn px-4 py-2 text-sm font-medium hover:bg-slate-100 whitespace-nowrap">Матчи</button>
@@ -121,7 +110,7 @@
 
           <!-- Панель управления -->
           <div class="bg-white p-4 rounded-2xl shadow ring-1 ring-slate-200">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
               <div>
                 <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Ваша сторона</label>
                 <div class="flex bg-slate-100 rounded-xl p-1">
@@ -136,6 +125,17 @@
               <div>
                 <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Противник</label>
                 <select id="dh-enemy-team" class="w-full px-3 py-2 rounded-xl bg-slate-100 font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500"></select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Фильтр Роли</label>
+                <select id="dh-filter-role" class="w-full px-3 py-2 rounded-xl bg-slate-100 font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500">
+                   <option value="">Все роли</option>
+                   <option value="exp">EXP Lane</option>
+                   <option value="jungle">Jungle</option>
+                   <option value="mid">Mid Lane</option>
+                   <option value="roam">Roamer</option>
+                   <option value="gold">Gold Lane</option>
+                </select>
               </div>
               <div>
                 <label class="block text-xs font-medium mb-1 text-slate-500 uppercase tracking-wide">Действия</label>
@@ -480,11 +480,11 @@
     let editingMatchId = null;
     
     // Draft Helper State
-    // picks теперь объекты { hero: string, role: string|null }
     let draftState = {
        mySide: 'blue', 
        enemyTeam: '',
        patch: '',
+       roleFilter: '', // New Filter
        activeSlot: null,
        blue: { bans: Array(5).fill(''), picks: Array(5).fill(null) },
        red: { bans: Array(5).fill(''), picks: Array(5).fill(null) }
@@ -578,6 +578,7 @@
     const dhWinProbBlue = document.getElementById('dh-win-prob-blue');
     const dhWinProbRed = document.getElementById('dh-win-prob-red');
     const dhDraftSummary = document.getElementById('dh-draft-summary');
+    const dhFilterRole = document.getElementById('dh-filter-role');
     
     // New Elements for Preview
     const dhPreviewContainer = document.getElementById('dh-preview-container');
@@ -763,6 +764,10 @@
             draftState.patch = e.target.value;
             updateDraftSuggestions();
             evaluateDraftStrength();
+        });
+        dhFilterRole.addEventListener('change', (e) => {
+            draftState.roleFilter = e.target.value;
+            updateDraftSuggestions();
         });
         dhReset.addEventListener('click', () => {
              draftState.blue.bans = Array(5).fill('');
@@ -1413,9 +1418,17 @@
                              hero: c.hero, 
                              score: analysis.score, 
                              reasons: analysis.reasons, 
-                             globalStat: analysis.globalStat
+                             globalStat: analysis.globalStat,
+                             roles: c.roles // Pass role data for filtering
                          };
                     });
+
+                 // Apply Role Filter
+                 if (draftState.roleFilter) {
+                     candidates = candidates.filter(s => {
+                         return s.roles && s.roles[draftState.roleFilter] && s.roles[draftState.roleFilter].picks > 0;
+                     });
+                 }
 
                  candidates.sort((a,b) => b.score - a.score);
                  const topPicks = candidates.slice(0, 10).map(c => ({
@@ -1439,8 +1452,22 @@
                                  reasons.push(`Контрит ${ally} (${fmtPct(sm*100)} WR)`);
                              }
                          });
-                         return { hero: c.hero, threatScore, details: reasons };
+                         return { hero: c.hero, threatScore, details: reasons, roles: c.roles };
                      }).filter(x => x.threatScore > 0).sort((a,b) => b.threatScore - a.threatScore);
+                     
+                     // Apply Role Filter to Counters too
+                     if (draftState.roleFilter) {
+                         threats = threats.filter(s => {
+                             // Use aggregate stats logic to find if hero has played this role
+                             // Since 'c.roles' might be missing here, re-fetch or assume valid if in globalStats
+                             // But wait, 'threats' are generated from globalStats. Let's ensure 'c' has roles
+                             // Actually, in the map above, 'c' is just the hero name from globalStats filter.
+                             // Need to attach roles from globalStats
+                             const stats = globalStats.find(g => g.hero === s.hero);
+                             return stats && stats.roles && stats.roles[draftState.roleFilter] && stats.roles[draftState.roleFilter].picks > 0;
+                         });
+                     }
+
                      renderCardList(dhListCounters, threats.slice(0, 5), 'pick');
                  }
 
